@@ -12,52 +12,52 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 
 ## Functional Requirement
 
-- ผู้ใช้งาน สามารถส่งข้อมูลเพื่อคำนวนภาษีได้
-- ผู้ใช้งาน แสดงภาษีที่ต้องจ่ายหรือได้รับในปีนั้น ๆ ได้
-- การคำนวนภาษีคำนวนจาก เงินหัก ณ ที่จ่าย / ค่าลดหย่อนส่วนตัว/ขั้นบันใดภาษี/เงินบริจาค
-- การคำนวนภาษีตามขั้นบันใด
-  - รายได้ 0 - 150,000 ได้รับการยกเว้น
-  - 150,001 - 500,000 อัตราภาษี 10%
-  - 500,001 - 1,000,000 อัตราภาษี 15%
-  - 1,000,001 - 2,000,000 อัตราภาษี 20%
-  - มากกว่า 2,000,000 อัตราภาษี 35%
-- เงินบริจาคสามารถหย่อนได้สูงสุด 100,000 บาท
-- ค่าลดหย่อนส่วนตัวมีค่าเริ่มต้นที่ 60,000 บาท
-- k-receipt โครงการช้อปลดภาษี ซึ่งสามารถลดหย่อนได้สูงสุด 50,000 บาทเป็นค่าเริ่มต้น
-- แอดมิน สามารถกำหนดค่าลดหย่อนส่วนตัวได้โดยไม่เกิน 100,000 บาท
-- แอดมิน สามารถกำหนด k-receipt สูงสุดได้ แต่ไม่เกิน 100,000 บาท
-- ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท
-- ค่าลด k-receipt ต้องมีค่ามากกว่า 0 บาท
-- ในกรณีที่รายรับ รวมหักค่าลดหย่อน พร้อมทั้ง wht พบว่าต้องได้เงินคืน จะต้องคำนวนเงินที่ต้องได้รับคืนใน field ใหม่ ที่ชื่อว่า taxRefund
+- [ ] ผู้ใช้งาน สามารถส่งข้อมูลเพื่อคำนวนภาษีได้
+- [ ] ผู้ใช้งาน แสดงภาษีที่ต้องจ่ายหรือได้รับในปีนั้น ๆ ได้
+- [ ] การคำนวนภาษีคำนวนจาก เงินหัก ณ ที่จ่าย / ค่าลดหย่อนส่วนตัว/ขั้นบันใดภาษี/เงินบริจาค
+- [ ] การคำนวนภาษีตามขั้นบันใด
+  - [ ] รายได้ 0 - 150,000 ได้รับการยกเว้น
+  - [ ] 150,001 - 500,000 อัตราภาษี 10%
+  - [ ] 500,001 - 1,000,000 อัตราภาษี 15%
+  - [ ] 1,000,001 - 2,000,000 อัตราภาษี 20%
+  - [ ] มากกว่า 2,000,000 อัตราภาษี 35%
+- [ ] เงินบริจาคสามารถหย่อนได้สูงสุด 100,000 บาท
+- [ ] ค่าลดหย่อนส่วนตัวมีค่าเริ่มต้นที่ 60,000 บาท
+- [ ] k-receipt โครงการช้อปลดภาษี ซึ่งสามารถลดหย่อนได้สูงสุด 50,000 บาทเป็นค่าเริ่มต้น
+- [ ] แอดมิน สามารถกำหนดค่าลดหย่อนส่วนตัวได้โดยไม่เกิน 100,000 บาท
+- [ ] แอดมิน สามารถกำหนด k-receipt สูงสุดได้ แต่ไม่เกิน 100,000 บาท
+- [ ] ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท
+- [ ] ค่าลด k-receipt ต้องมีค่ามากกว่า 0 บาท
+- [ ] ในกรณีที่รายรับ รวมหักค่าลดหย่อน พร้อมทั้ง wht พบว่าต้องได้เงินคืน จะต้องคำนวนเงินที่ต้องได้รับคืนใน field ใหม่ ที่ชื่อว่า taxRefund
 
 ## Non-Functional Requirement
-- มี `Unit Test` ครอบคลุม
-- ใช้ `go module`
-- ใช้ go module `go mod init github.com/<your github name>/assessment-tax`
-- ใช้ go 1.21 or above
-- ใช้ `PostgreSQL`
-- API port _MUST_ get from `environment variable` name `PORT`
-- database url _MUST_ get from environment variable name `DATABASE_URL`
+- [ ] มี `Unit Test` ครอบคลุม
+- [ ] ใช้ `go module`
+- [x] ใช้ go module `go mod init github.com/<your github name>/go-assessment-tax`
+- [x] ใช้ go 1.21 or above
+- [ ] ใช้ `PostgreSQL`
+- [ ] API port _MUST_ get from `environment variable` name `PORT`
+- [ ] database url _MUST_ get from environment variable name `DATABASE_URL`
   - ตัวอย่าง `DATABASE_URL=host={REPLACE_ME} port=5432 user={REPLACE_ME} password={REPLACE_ME} dbname={REPLACE_ME} sslmode=disable`
-- ใช้ `docker compose` สำหรับต่อ Database
-- API support `Graceful Shutdown`
+- [ ] ใช้ `docker compose` สำหรับต่อ Database
+- [ ] API support `Graceful Shutdown`
   - เช่น ถ้ามีการกด `Ctrl + C` จะ print `shutting down the server`
-- มี Dockerfile สำหรับ build image และเป็น `Multi-stage build`
-- ใช้ `HTTP Method` และ `HTTP Status Code` อย่างเหมาะสม
-- ใช้ `gofmt` และ `go vet`
-- แยก Branch ของแต่ละ Story ออกจาก `main` และ Merge กลับไปยัง `main` Branch เสมอ
+- [ ] มี Dockerfile สำหรับ build image และเป็น `Multi-stage build`
+- [ ] ใช้ `HTTP Method` และ `HTTP Status Code` อย่างเหมาะสม
+- [ ] ใช้ `gofmt` และ `go vet`
+- [ ] แยก Branch ของแต่ละ Story ออกจาก `main` และ Merge กลับไปยัง `main` Branch เสมอ
   - เช่น story ที่ 1 จะใช้ branch ชื่อ `feature/story-1` หรือ `feature/store-1-create-tax-calculation`
-- admin กำหนด Basic authen ด้วย username: `adminTax`, password: `admin!`
+- [x] admin กำหนด Basic authen ด้วย username: `adminTax`, password: `admin!`
   - username และ password ต้องเป็น environment variable
   - และ `env` ต้องเป็นชื่อ `ADMIN_USERNAME` และ `ADMIN_PASSWORD`
-- **การ run program จะใช้คำสั่ง docker compose up เพื่อเตรียม environment และ go run main.go เพื่อ start api**
+- [ ] **การ run program จะใช้คำสั่ง docker compose up เพื่อเตรียม environment และ go run main.go เพื่อ start api**
   - **หากต้องมีการใช้คำสั่งอื่น ๆ เพื่อทำให้โปรแกรมทำงานได้ จะไม่นับคะแนนหรือถูกหักคะแนน**
   - การตรวจจะทำการ export `env` ไว้ล่วงหน้าก่อนรัน ดังนี้
 	- `export PORT=8080`
 	- `export DATABASE_URL={REPLACE_ME}`
 	- `export ADMIN_USERNAME=adminTax`
 	- `export ADMIN_PASSWORD=admin!`
-- port ของ api จะต้องเป็น 8080
+- [ ] port ของ api จะต้องเป็น 8080
 
 ## Assumption
 

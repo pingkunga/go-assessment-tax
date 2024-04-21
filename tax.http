@@ -1,0 +1,22 @@
+@HostAddress = http://localhost:8080
+### Authorization: Basic user:passwd
+
+GET {{HostAddress}}/hello-world
+
+### Story: EXP01
+### As a user, I want to create a new expense, so that I can keep track of my expenses.
+
+POST {{HostAddress}}/tax/calculations
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "totalIncome": 500000.0,
+  "wht": 0.0,
+  "allowances": [
+    {
+      "allowanceType": "donation",
+      "amount": 0.0
+    }
+  ]
+}
