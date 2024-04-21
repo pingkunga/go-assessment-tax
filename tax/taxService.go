@@ -1,22 +1,86 @@
 package tax
 
-func CalculateTax(tax TaxRequest) float64 {
+import (
+	"errors"
+)
 
-	netTaxAmount := tax.TotalIncome - PersonalDeduction()
+func CalculateTax(tax TaxRequest) TaxResponse {
+
+	netIncome := calculateNetIncome(tax)
 
 	var taxAmount float64
 	for _, step := range TaxStepList() {
-		taxAmount = taxAmount + (netTaxAmount * step.TaxRate)
-		netTaxAmount = netTaxAmount - step.MaxIncome
+		taxAmount = taxAmount + (netIncome * step.TaxRate)
+		netIncome = netIncome - step.MaxIncome
 
-		if netTaxAmount < 0 {
+		if netIncome < 0 {
 			break
 		}
 	}
 
 	taxAmount = taxAmount - tax.WHT
 
-	return taxAmount
+	if taxAmount < 0 {
+		return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1}
+	}
+	return TaxResponse{Tax: taxAmount, TaxRefund: 0}
+}
+
+func calculateNetIncome(tax TaxRequest) float64 {
+	netIncome := tax.TotalIncome - PersonalDeduction()
+
+	for _, allowance := range tax.Allowances {
+		netIncome = netIncome - allowanceAmountGuard(allowance)
+	}
+
+	return netIncome
+}
+
+func allowanceAmountGuard(allowance Allowance) float64 {
+
+	if allowance.AllowanceType == DEDUCTION_DONATION && allowance.Amount > DEDUCTION_DONATION_MAX {
+		return DEDUCTION_DONATION_MAX
+	}
+	return allowance.Amount
+}
+
+const DEDUCTION_DONATION = "donation"
+const DEDUCTION_DONATION_MAX = 100000
+
+const DEDUCTION_K_RECEIPT = "k-receipt"
+
+var ErrTotalIncome = errors.New("TotalIncome is less than 0")
+var ErrInvalidWHT = errors.New("WHT is less than 0")
+var ErrInvalidWHTMoreThanTotalIncome = errors.New("WHT is more than TotalIncome")
+var ErrInvalidAllowanceAmount = errors.New("Allowance amount is less than 0")
+var ErrNotSupportAllowanceType = errors.New("Allowance type support: donation, k-receipt")
+
+func ValidateTaxRequest(tax TaxRequest) (err error) {
+	if tax.TotalIncome < 0 {
+		err = errors.Join(err, ErrTotalIncome)
+	}
+
+	if tax.WHT < 0 {
+		err = errors.Join(err, ErrTotalIncome)
+	}
+
+	if tax.TotalIncome < tax.WHT {
+		err = errors.Join(err, ErrInvalidWHTMoreThanTotalIncome)
+	}
+
+	for _, allowance := range tax.Allowances {
+
+		if allowance.AllowanceType != DEDUCTION_DONATION && allowance.AllowanceType != DEDUCTION_K_RECEIPT {
+			err = errors.Join(err, ErrNotSupportAllowanceType)
+		}
+
+		if allowance.Amount < 0 {
+			err = errors.Join(err, ErrInvalidAllowanceAmount)
+		}
+
+	}
+
+	return nil
 }
 
 func PersonalDeduction() float64 {

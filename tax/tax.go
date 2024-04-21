@@ -12,7 +12,8 @@ type Allowance struct {
 }
 
 type TaxResponse struct {
-	Tax float64 `json:"tax"`
+	Tax       float64 `json:"tax"`
+	TaxRefund float64 `json:"taxRefund"`
 }
 
 type TaxStep struct {

@@ -12,8 +12,11 @@ func CalculationsHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
-	taxAmount := CalculateTax(taxRequest)
+	err := ValidateTaxRequest(taxRequest)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
 
-	TaxResponse := TaxResponse{Tax: taxAmount}
+	TaxResponse := CalculateTax(taxRequest)
 	return c.JSON(http.StatusOK, TaxResponse)
 }
