@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-func CalculateTax(tax TaxRequest) float64 {
+func CalculateTax(tax TaxRequest) TaxResponse {
 
 	netIncome := calculateNetIncome(tax)
 
@@ -20,7 +20,10 @@ func CalculateTax(tax TaxRequest) float64 {
 
 	taxAmount = taxAmount - tax.WHT
 
-	return taxAmount
+	if taxAmount < 0 {
+		return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1}
+	}
+	return TaxResponse{Tax: taxAmount, TaxRefund: 0}
 }
 
 func calculateNetIncome(tax TaxRequest) float64 {

@@ -25,7 +25,8 @@ Response body
 
 ```json
 {
-  "tax": 29000.0
+  "tax": 29000.0,
+  "taxRefund": 0.0
 }
 ```
 
@@ -50,7 +51,8 @@ Response body
 
 ```json
 {
-  "tax": 4000.0
+  "tax": 4000.0,
+  "taxRefund": 0.0
 }
 ```
 
@@ -75,6 +77,33 @@ Response body
 
 ```json
 {
-  "tax": 19000.0
+  "tax": 19000.0,
+  "taxRefund": 0.0
+}
+```
+
+### Story: EXP03-1
+### As user, I want to calculate my tax donation and have taxRefund
+POST {{HostAddress}}/tax/calculations
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "totalIncome": 500000.0,
+  "wht": 20000.0,
+  "allowances": [
+    {
+      "allowanceType": "donation",
+      "amount": 200000.0
+    }
+  ]
+}
+
+Response body
+
+```json
+{
+  "tax": 0.0,
+  "taxRefund": 1000.00
 }
 ```
