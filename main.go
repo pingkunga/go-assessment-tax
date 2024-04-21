@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -33,11 +34,12 @@ func main() {
 
 	authoriedRoute.POST("tax/calculations", tax.CalculationsHandler)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":" + APP_PORT))
 }
 
 var ADMIN_USERNAME string
 var ADMIN_PASSWORD string
+var APP_PORT string
 
 func init() {
 	// Load environment variables
@@ -53,4 +55,13 @@ func init() {
 	ADMIN_USERNAME = os.Getenv("ADMIN_USERNAME")
 	ADMIN_PASSWORD = os.Getenv("ADMIN_PASSWORD")
 
+	if os.Getenv("PORT") == "" {
+		APP_PORT = "8080"
+	} else {
+		APP_PORT = os.Getenv("PORT")
+		_, err := strconv.Atoi(APP_PORT)
+		if err != nil {
+			panic("PORT must be a number")
+		}
+	}
 }
