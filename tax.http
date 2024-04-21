@@ -21,6 +21,14 @@ Content-Type: application/json
   ]
 }
 
+Response body
+
+```json
+{
+  "tax": 29000.0
+}
+```
+
 ### Story: EXP02
 ### As user, I want to calculate my tax with WHT
 POST {{HostAddress}}/tax/calculations
@@ -37,3 +45,36 @@ Content-Type: application/json
     }
   ]
 }
+
+Response body
+
+```json
+{
+  "tax": 4000.0
+}
+```
+
+### Story: EXP03
+### As user, I want to calculate my tax donation
+POST {{HostAddress}}/tax/calculations
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "totalIncome": 500000.0,
+  "wht": 0.0,
+  "allowances": [
+    {
+      "allowanceType": "donation",
+      "amount": 200000.0
+    }
+  ]
+}
+
+Response body
+
+```json
+{
+  "tax": 19000.0
+}
+```
