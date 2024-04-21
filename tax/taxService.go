@@ -14,6 +14,8 @@ func CalculateTax(tax TaxRequest) float64 {
 		}
 	}
 
+	taxAmount = taxAmount - tax.WHT
+
 	return taxAmount
 }
 

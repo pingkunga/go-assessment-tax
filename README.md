@@ -16,8 +16,8 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 - [ ] ผู้ใช้งาน แสดงภาษีที่ต้องจ่ายหรือได้รับในปีนั้น ๆ ได้
 - [ ] การคำนวนภาษีคำนวนจาก เงินหัก ณ ที่จ่าย / ค่าลดหย่อนส่วนตัว/ขั้นบันใดภาษี/เงินบริจาค
 - [ ] การคำนวนภาษีตามขั้นบันใด
-  - [ ] รายได้ 0 - 150,000 ได้รับการยกเว้น
-  - [ ] 150,001 - 500,000 อัตราภาษี 10%
+  - [x] รายได้ 0 - 150,000 ได้รับการยกเว้น
+  - [x] 150,001 - 500,000 อัตราภาษี 10%
   - [ ] 500,001 - 1,000,000 อัตราภาษี 15%
   - [ ] 1,000,001 - 2,000,000 อัตราภาษี 20%
   - [ ] มากกว่า 2,000,000 อัตราภาษี 35%
@@ -36,7 +36,7 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 - [x] ใช้ go module `go mod init github.com/<your github name>/go-assessment-tax`
 - [x] ใช้ go 1.21 or above
 - [ ] ใช้ `PostgreSQL`
-- [ ] API port _MUST_ get from `environment variable` name `PORT`
+- [x] API port _MUST_ get from `environment variable` name `PORT`
 - [ ] database url _MUST_ get from environment variable name `DATABASE_URL`
   - ตัวอย่าง `DATABASE_URL=host={REPLACE_ME} port=5432 user={REPLACE_ME} password={REPLACE_ME} dbname={REPLACE_ME} sslmode=disable`
 - [ ] ใช้ `docker compose` สำหรับต่อ Database
@@ -57,7 +57,7 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 	- `export DATABASE_URL={REPLACE_ME}`
 	- `export ADMIN_USERNAME=adminTax`
 	- `export ADMIN_PASSWORD=admin!`
-- [ ] port ของ api จะต้องเป็น 8080
+- [x] port ของ api จะต้องเป็น 8080
 
 ## Assumption
 
@@ -83,6 +83,8 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 ## User stories
 
 ### Story: EXP01
+
+- [X] IS OK
 
 ```
 * As user, I want to calculate my tax
@@ -127,6 +129,8 @@ Response body
 
 -------
 ### Story: EXP02
+
+- [X] IS OK
 
 ```
 * As user, I want to calculate my tax with WHT
