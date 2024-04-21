@@ -20,3 +20,20 @@ Content-Type: application/json
     }
   ]
 }
+
+### Story: EXP02
+### As user, I want to calculate my tax with WHT
+POST {{HostAddress}}/tax/calculations
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "totalIncome": 500000.0,
+  "wht": 25000.0,
+  "allowances": [
+    {
+      "allowanceType": "donation",
+      "amount": 0.0
+    }
+  ]
+}

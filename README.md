@@ -84,6 +84,8 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 
 ### Story: EXP01
 
+- [X] IS OK
+
 ```
 * As user, I want to calculate my tax
 ในฐานะผู้ใช้ ฉันต้องการคำนวนภาษีจากข้อมูลที่ส่งให้
@@ -127,6 +129,8 @@ Response body
 
 -------
 ### Story: EXP02
+
+- [X] IS OK
 
 ```
 * As user, I want to calculate my tax with WHT
