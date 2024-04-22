@@ -60,23 +60,23 @@ const DEDUCTION_DONATION_MAX = 100000
 
 const DEDUCTION_K_RECEIPT = "k-receipt"
 
-var ErrTotalIncome = errors.New("TotalIncome is less than 0")
-var ErrInvalidWHT = errors.New("WHT is less than 0")
-var ErrInvalidWHTMoreThanTotalIncome = errors.New("WHT is more than TotalIncome")
-var ErrInvalidAllowanceAmount = errors.New("Allowance amount is less than 0")
+var ErrTotalIncomeLessThanZero = errors.New("TotalIncome is less than 0")
+var ErrWHTLessThanZero = errors.New("WHT is less than 0")
+var ErrWHTMoreThanTotalIncome = errors.New("WHT is more than TotalIncome")
+var ErrAllowanceAmountLessThanZero = errors.New("Allowance amount is less than 0")
 var ErrNotSupportAllowanceType = errors.New("Allowance type support: donation, k-receipt")
 
 func ValidateTaxRequest(tax TaxRequest) (err error) {
 	if tax.TotalIncome < 0 {
-		err = errors.Join(err, ErrTotalIncome)
+		err = errors.Join(err, ErrTotalIncomeLessThanZero)
 	}
 
 	if tax.WHT < 0 {
-		err = errors.Join(err, ErrTotalIncome)
+		err = errors.Join(err, ErrWHTLessThanZero)
 	}
 
 	if tax.TotalIncome < tax.WHT {
-		err = errors.Join(err, ErrInvalidWHTMoreThanTotalIncome)
+		err = errors.Join(err, ErrWHTMoreThanTotalIncome)
 	}
 
 	for _, allowance := range tax.Allowances {
@@ -86,12 +86,11 @@ func ValidateTaxRequest(tax TaxRequest) (err error) {
 		}
 
 		if allowance.Amount < 0 {
-			err = errors.Join(err, ErrInvalidAllowanceAmount)
+			err = errors.Join(err, ErrAllowanceAmountLessThanZero)
 		}
-
 	}
 
-	return nil
+	return
 }
 
 func PersonalDeduction() float64 {

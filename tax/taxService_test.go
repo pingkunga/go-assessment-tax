@@ -1,6 +1,7 @@
 package tax
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -89,6 +90,84 @@ func TestCalculateTax(t *testing.T) {
 
 		assert.EqualValues(t, 0.0, taxResponse.Tax)
 		assert.EqualValues(t, 1000.0, taxResponse.TaxRefund)
+	})
+
+}
+
+func TestValidateTaxRequest(t *testing.T) {
+
+	t.Run("Given: TotalIncome is -1, should return ErrTotalIncome / ErrInvalidWHTMoreThanTotalIncome", func(t *testing.T) {
+		tax := TaxRequest{
+			TotalIncome: -1.0,
+			WHT:         0.0,
+		}
+		err := ValidateTaxRequest(tax)
+		assert.NotNil(t, err)
+		assert.Equal(t, true, errors.Is(err, ErrTotalIncomeLessThanZero))
+		assert.Equal(t, true, errors.Is(err, ErrWHTMoreThanTotalIncome))
+	})
+
+	t.Run("Given: WHT is -1, should return ErrInvalidWHTMoreThanTotalIncome", func(t *testing.T) {
+		tax := TaxRequest{
+			TotalIncome: 1.0,
+			WHT:         -1.0,
+		}
+		err := ValidateTaxRequest(tax)
+		assert.NotNil(t, err)
+		assert.Equal(t, true, errors.Is(err, ErrWHTLessThanZero))
+	})
+
+	t.Run("Given: Allowance is SSF, should return ErrNotSupportAllowanceType", func(t *testing.T) {
+		tax := TaxRequest{
+			TotalIncome: 1.0,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{
+					AllowanceType: "SSF",
+					Amount:        0.0,
+				},
+			},
+		}
+		err := ValidateTaxRequest(tax)
+		assert.NotNil(t, err)
+		assert.Equal(t, true, errors.Is(err, ErrNotSupportAllowanceType))
+	})
+
+	t.Run("Given: Allowance amount type donation is -1, should return ErrAllowanceAmountLessThanZero", func(t *testing.T) {
+		tax := TaxRequest{
+			TotalIncome: 1.0,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{
+					AllowanceType: "donation",
+					Amount:        -1.0,
+				},
+			},
+		}
+		err := ValidateTaxRequest(tax)
+		assert.NotNil(t, err)
+		assert.Equal(t, true, errors.Is(err, ErrAllowanceAmountLessThanZero))
+	})
+
+	t.Run("Given: Allowance amount type donations is -1 / k-recipt is -1 , should return ErrAllowanceAmountLessThanZero", func(t *testing.T) {
+		tax := TaxRequest{
+			TotalIncome: 1.0,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{
+					AllowanceType: "donations",
+					Amount:        -1.0,
+				},
+				{
+					AllowanceType: "k-recipts",
+					Amount:        -1.0,
+				},
+			},
+		}
+		err := ValidateTaxRequest(tax)
+		assert.NotNil(t, err)
+		assert.Equal(t, true, errors.Is(err, ErrNotSupportAllowanceType))
+		assert.Equal(t, true, errors.Is(err, ErrAllowanceAmountLessThanZero))
 	})
 
 }
