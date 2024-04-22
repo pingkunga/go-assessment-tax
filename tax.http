@@ -4,7 +4,7 @@
 GET {{HostAddress}}/hello-world
 
 ### Story: EXP01
-### As a user, I want to create a new expense, so that I can keep track of my expenses.
+### As a user, As user, I want to calculate my tax
 
 POST {{HostAddress}}/tax/calculations
 Authorization: Basic YWRtaW5UYXg6YWRtaW4h
@@ -27,6 +27,48 @@ Response body
 {
   "tax": 29000.0,
   "taxRefund": 0.0
+}
+```
+### Story: EXP01-1:
+### As user, I want to calculate my tax with Income 2,000,001
+
+POST {{HostAddress}}/tax/calculations
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "totalIncome": 2000001.0,
+  "wht": 0.0
+}
+
+Response body
+
+```json
+{
+  "tax": 258000.2,
+  "taxRefund": 0,
+  "taxLevels": [
+    {
+      "level": "0.00 - 150,000.00",
+      "tax": 0
+    },
+    {
+      "level": "150,001.00 - 500,000.00",
+      "tax": 50000
+    },
+    {
+      "level": "500,001.00 - 1,000,000.00",
+      "tax": 150000
+    },
+    {
+      "level": "1,000,001.00 - 2,000,000.00",
+      "tax": 58000.200000000004
+    },
+    {
+      "level": "2,000,001.00 ขึ้นไป",
+      "tax": 0
+    }
+  ]
 }
 ```
 

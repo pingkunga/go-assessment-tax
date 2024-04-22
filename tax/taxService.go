@@ -2,6 +2,9 @@ package tax
 
 import (
 	"errors"
+	"fmt"
+
+	"github.com/dustin/go-humanize"
 )
 
 func CalculateTax(tax TaxRequest) TaxResponse {
@@ -9,21 +12,29 @@ func CalculateTax(tax TaxRequest) TaxResponse {
 	netIncome := calculateNetIncome(tax)
 
 	var taxAmount float64
+	var taxLevels []TaxLevel
 	for _, step := range TaxStepList() {
-		taxAmount = taxAmount + (netIncome * step.TaxRate)
-		netIncome = netIncome - step.MaxIncome
-
-		if netIncome < 0 {
-			break
+		stepTaxAmount := 0.0
+		if netIncome <= 0 {
+			stepTaxAmount = 0
+		} else if netIncome > step.MaxIncome {
+			stepTaxAmount = (step.MaxIncome * step.TaxRate)
+			netIncome = netIncome - step.MaxIncome
+		} else {
+			stepTaxAmount = (netIncome * step.TaxRate)
+			netIncome = netIncome - step.MaxIncome
 		}
+
+		taxLevels = append(taxLevels, TaxLevel{Level: step.FriendlyMessage, Tax: stepTaxAmount})
+		taxAmount = taxAmount + stepTaxAmount
 	}
 
 	taxAmount = taxAmount - tax.WHT
 
 	if taxAmount < 0 {
-		return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1}
+		return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1, TaxLevels: taxLevels}
 	}
-	return TaxResponse{Tax: taxAmount, TaxRefund: 0}
+	return TaxResponse{Tax: taxAmount, TaxRefund: 0, TaxLevels: taxLevels}
 }
 
 func calculateNetIncome(tax TaxRequest) float64 {
@@ -96,11 +107,22 @@ func PersonalDeduction() float64 {
 มากกว่า 2,000,000 อัตราภาษี 35%
 */
 func TaxStepList() []TaxStep {
-	return []TaxStep{
+	taxStep := []TaxStep{
 		{seq: 1, MinIncome: 0, MaxIncome: 150000, TaxRate: 0},
 		{seq: 2, MinIncome: 150001, MaxIncome: 500000, TaxRate: 0.1},
 		{seq: 3, MinIncome: 500001, MaxIncome: 1000000, TaxRate: 0.15},
 		{seq: 4, MinIncome: 1000001, MaxIncome: 2000000, TaxRate: 0.2},
 		{seq: 5, MinIncome: 2000001, MaxIncome: 999999999, TaxRate: 0.35},
 	}
+
+	//Update FriendlyMessage
+	for i, step := range taxStep {
+		if taxStep[i].MaxIncome == 999999999 {
+			taxStep[i].FriendlyMessage = fmt.Sprintf("%s ขึ้นไป", humanize.FormatFloat("#,###.##", step.MinIncome))
+		} else {
+			taxStep[i].FriendlyMessage = fmt.Sprintf("%s - %s", humanize.FormatFloat("#,###.##", step.MinIncome), humanize.FormatFloat("#,###.##", step.MaxIncome))
+		}
+	}
+
+	return taxStep
 }

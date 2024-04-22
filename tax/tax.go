@@ -12,13 +12,20 @@ type Allowance struct {
 }
 
 type TaxResponse struct {
-	Tax       float64 `json:"tax"`
-	TaxRefund float64 `json:"taxRefund"`
+	Tax       float64    `json:"tax"`
+	TaxRefund float64    `json:"taxRefund"`
+	TaxLevels []TaxLevel `json:"taxLevels"`
+}
+
+type TaxLevel struct {
+	Level string  `json:"level"`
+	Tax   float64 `json:"tax"`
 }
 
 type TaxStep struct {
-	seq       int
-	MinIncome float64
-	MaxIncome float64
-	TaxRate   float64
+	seq             int
+	MinIncome       float64
+	MaxIncome       float64
+	TaxRate         float64
+	FriendlyMessage string
 }
