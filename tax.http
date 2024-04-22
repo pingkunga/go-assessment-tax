@@ -150,6 +150,53 @@ Response body
 }
 ```
 
+### Story: EXP04
+### As user, I want to calculate my tax with tax level detail
+POST {{HostAddress}}/tax/calculations
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "totalIncome": 500000.0,
+  "wht": 0.0,
+  "allowances": [
+    {
+      "allowanceType": "donation",
+      "amount": 200000.0
+    }
+  ]
+}
+
+Response body
+
+```json
+{
+  "tax": 19000.0,
+  "taxLevel": [
+    {
+      "level": "0-150,000",
+      "tax": 0.0
+    },
+    {
+      "level": "150,001-500,000",
+      "tax": 19000.0
+    },
+    {
+      "level": "500,001-1,000,000",
+      "tax": 0.0
+    },
+    {
+      "level": "1,000,001-2,000,000",
+      "tax": 0.0
+    },
+    {
+      "level": "2,000,001 ขึ้นไป",
+      "tax": 0.0
+    }
+  ]
+}
+```
+
 ### Error Validation
 ### Story: ERROR
 ### As a user, I want to get error message when I input invalid data such as negative number
