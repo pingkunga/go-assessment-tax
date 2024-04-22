@@ -1,6 +1,7 @@
 package tax
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -14,7 +15,7 @@ func CalculationsHandler(c echo.Context) error {
 
 	err := ValidateTaxRequest(taxRequest)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("ValidateError: %v", err.Error()))
 	}
 
 	TaxResponse := CalculateTax(taxRequest)

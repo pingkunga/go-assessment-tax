@@ -149,3 +149,21 @@ Response body
   "taxRefund": 1000.00
 }
 ```
+
+### Error Validation
+### Story: ERROR
+### As a user, I want to get error message when I input invalid data such as negative number
+POST {{HostAddress}}/tax/calculations
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "totalIncome": 500000.0,
+  "wht": -500.0,
+  "allowances": [
+    {
+      "allowanceType": "donation",
+      "amount": -200000.0
+    }
+  ]
+}
