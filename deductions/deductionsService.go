@@ -13,7 +13,7 @@ func NewService(repo *repo.Repository) *Service {
 }
 
 func (h *Service) SetPersonalDeduction(request DebuctionRequest) (PersonalDeductionResponse, error) {
-	err := h.repo.SetAllowanceConfig("personal", request.Amount)
+	err := h.repo.SetDeductionConfig("personal", request.Amount)
 	if err != nil {
 		return PersonalDeductionResponse{}, err
 	}
@@ -23,11 +23,20 @@ func (h *Service) SetPersonalDeduction(request DebuctionRequest) (PersonalDeduct
 }
 
 func (h *Service) SetKPlustDeduction(request DebuctionRequest) (KReceiptResponse, error) {
-	err := h.repo.SetAllowanceConfig("k-receipt", request.Amount)
+	err := h.repo.SetDeductionConfig("k-receipt", request.Amount)
 	if err != nil {
 		return KReceiptResponse{}, err
 	}
 
 	return KReceiptResponse{KReceipt: request.Amount}, nil
 
+}
+
+func (h *Service) AllowanceConfigs() ([]repo.DeductionConfig, error) {
+	allowances, err := h.repo.AllowanceConfigs()
+	if err != nil {
+		return nil, err
+	}
+
+	return allowances, nil
 }

@@ -45,6 +45,7 @@ func main() {
 	service := deductions.NewService(repo)
 	handler := deductions.NewHandler(service)
 
+	authoriedRoute.GET("/deductions", handler.AllowanceConfigsHandler)
 	authoriedRoute.POST("/deductions/personal", handler.SetPersonalDeductionHandler)
 
 	e.Logger.Fatal(e.Start(":" + APP_PORT))

@@ -232,3 +232,28 @@ Response body
   "personalDeduction": 70000.0
 }
 ```
+
+### Story: EXP05
+### As admin, I want to list deductions
+GET {{HostAddress}}/admin/deductions
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+```json
+[
+  {
+    "id": 1,
+    "deductionType": "personal",
+    "deductionAmount": 60000,
+    "deductionMin": 10000,
+    "adeductionMax": 100000
+  },
+  {
+    "id": 2,
+    "deductionType": "k-receipt",
+    "deductionAmount": 50000,
+    "deductionMin": 0,
+    "adeductionMax": 100000
+  }
+]
+```

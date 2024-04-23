@@ -42,3 +42,13 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, deductionsResponse)
 }
+
+func (h *Handler) AllowanceConfigsHandler(c echo.Context) error {
+
+	allowances, error := h.service.AllowanceConfigs()
+	if error != nil {
+		return c.JSON(http.StatusBadRequest, error)
+	}
+
+	return c.JSON(http.StatusOK, allowances)
+}

@@ -1,10 +1,20 @@
 package postgres
 
-import "log"
+import (
+	"log"
+)
 
-func (p *Repository) GetAllowanceConfig(pKey string) (float64, error) {
+type DeductionConfig struct {
+	Id              int     `json:"id"`
+	DeductionType   string  `json:"deductionType"`
+	DeductionAmount float64 `json:"deductionAmount"`
+	DeductionMin    float64 `json:"deductionMin"`
+	DeductionMax    float64 `json:"adeductionMax"`
+}
 
-	stmt, err := p.Db.Prepare("SELECT allowance_amount FROM TAX_ALLOWANCECONFIG WHERE allowance_type = $1")
+func (p *Repository) GetDeductionConfig(pKey string) (float64, error) {
+
+	stmt, err := p.Db.Prepare("SELECT deduction_amount FROM TAX_DEDUCTIONCONFIG WHERE deduction_type = $1")
 	if err != nil {
 		log.Fatal("can't Prepare SQL for "+pKey, err)
 	}
@@ -21,8 +31,8 @@ func (p *Repository) GetAllowanceConfig(pKey string) (float64, error) {
 	return personalDeduction, nil
 }
 
-func (p *Repository) SetAllowanceConfig(pKey string, newValue float64) error {
-	stmt, err := p.Db.Prepare("UPDATE TAX_ALLOWANCECONFIG SET allowance_amount = $1 WHERE allowance_type = $2")
+func (p *Repository) SetDeductionConfig(pKey string, newValue float64) error {
+	stmt, err := p.Db.Prepare("UPDATE TAX_DEDUCTIONCONFIG SET deduction_amount = $1 WHERE deduction_type = $2")
 	if err != nil {
 		log.Fatal("can't Prepare SQL for Update PersonalDeduction", err)
 	}
@@ -34,4 +44,25 @@ func (p *Repository) SetAllowanceConfig(pKey string, newValue float64) error {
 		return err
 	}
 	return nil
+}
+
+func (p *Repository) AllowanceConfigs() ([]DeductionConfig, error) {
+	rows, err := p.Db.Query("SELECT * FROM TAX_DEDUCTIONCONFIG")
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	allowanceConfigs := []DeductionConfig{}
+	for rows.Next() {
+		allowanceConfig := DeductionConfig{}
+		err := rows.Scan(&allowanceConfig.Id, &allowanceConfig.DeductionType, &allowanceConfig.DeductionAmount, &allowanceConfig.DeductionMin, &allowanceConfig.DeductionMax)
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+		allowanceConfigs = append(allowanceConfigs, allowanceConfig)
+	}
+	return allowanceConfigs, nil
 }
