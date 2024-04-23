@@ -28,8 +28,10 @@ func main() {
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
 	})
 
+	e.POST("/tax/calculations", tax.CalculationsHandler)
+
 	//Authorized
-	authoriedRoute := e.Group("/")
+	authoriedRoute := e.Group("/admin")
 
 	//Middleware-Auth
 	authoriedRoute.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
@@ -39,13 +41,11 @@ func main() {
 		return false, nil
 	}))
 
-	authoriedRoute.POST("tax/calculations", tax.CalculationsHandler)
-
 	repo := postgres.NewRepository(db)
 	service := deductions.NewService(repo)
 	handler := deductions.NewHandler(service)
 
-	authoriedRoute.POST("admin/deductions/personal", handler.SetPersonalDeductionHandler)
+	authoriedRoute.POST("/deductions/personal", handler.SetPersonalDeductionHandler)
 
 	e.Logger.Fatal(e.Start(":" + APP_PORT))
 }
