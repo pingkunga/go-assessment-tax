@@ -214,3 +214,21 @@ Content-Type: application/json
     }
   ]
 }
+
+### Story: EXP05
+### As admin, I want to setting personal deduction ในฐานะ Admin ฉันต้องการตั้งค่าลดหย่อนส่วนตัว
+POST {{HostAddress}}/admin/deductions/personal
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": 70000.0
+}
+
+Response body
+
+```json
+{
+  "personalDeduction": 70000.0
+}
+```
