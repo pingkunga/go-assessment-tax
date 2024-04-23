@@ -1,9 +1,13 @@
 services:
-  postgres:
+  postgres_db:
     image: postgres:16
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ktaxes
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '5432:5432'
+volumes:
+    pgdata:
