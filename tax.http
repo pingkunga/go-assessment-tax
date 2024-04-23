@@ -7,7 +7,6 @@ GET {{HostAddress}}/hello-world
 ### As a user, As user, I want to calculate my tax
 
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -33,7 +32,6 @@ Response body
 ### As user, I want to calculate my tax with Income 2,000,001
 
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -75,7 +73,6 @@ Response body
 ### Story: EXP02
 ### As user, I want to calculate my tax with WHT
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -101,7 +98,6 @@ Response body
 ### Story: EXP03
 ### As user, I want to calculate my tax donation
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -127,7 +123,6 @@ Response body
 ### Story: EXP03-1
 ### As user, I want to calculate my tax donation and have taxRefund
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -153,7 +148,6 @@ Response body
 ### Story: EXP04
 ### As user, I want to calculate my tax with tax level detail
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -201,7 +195,7 @@ Response body
 ### Story: ERROR
 ### As a user, I want to get error message when I input invalid data such as negative number
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+#Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -214,6 +208,12 @@ Content-Type: application/json
     }
   ]
 }
+
+Response body
+
+```json
+"ValidateError: WHT is less than 0\nAllowance amount is less than 0"
+```
 
 ### Story: EXP05
 ### As admin, I want to setting personal deduction ในฐานะ Admin ฉันต้องการตั้งค่าลดหย่อนส่วนตัว
