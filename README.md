@@ -275,6 +275,8 @@ Response body
 
 ### Story: EXP05
 
+- [x] IS OK
+
 ```
 * As admin, I want to setting personal deduction
 ในฐานะ Admin ฉันต้องการตั้งค่าลดหย่อนส่วนตัว

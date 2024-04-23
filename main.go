@@ -7,10 +7,17 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/pingkunga/assessment-tax/deductions"
+	"github.com/pingkunga/assessment-tax/postgres"
 	"github.com/pingkunga/assessment-tax/tax"
 )
 
 func main() {
+	db, err := postgres.New()
+	if err != nil {
+		panic(err)
+	}
+
 	e := echo.New()
 
 	//Middleware-Log
@@ -33,6 +40,12 @@ func main() {
 	}))
 
 	authoriedRoute.POST("tax/calculations", tax.CalculationsHandler)
+
+	repo := postgres.NewRepository(db)
+	service := deductions.NewService(repo)
+	handler := deductions.NewHandler(service)
+
+	authoriedRoute.POST("admin/deductions/personal", handler.SetPersonalDeductionHandler)
 
 	e.Logger.Fatal(e.Start(":" + APP_PORT))
 }
@@ -63,5 +76,9 @@ func init() {
 		if err != nil {
 			panic("PORT must be a number")
 		}
+	}
+
+	if os.Getenv("DATABASE_URL") == "" {
+		panic("DATABASE_URL is not set")
 	}
 }
