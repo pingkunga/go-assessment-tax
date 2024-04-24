@@ -233,7 +233,7 @@ Response body
 }
 ```
 
-### Story: EXP05
+### Story: EXP05-1
 ### As admin, I want to list deductions
 GET {{HostAddress}}/admin/deductions
 Authorization: Basic YWRtaW5UYXg6YWRtaW4h
@@ -256,4 +256,44 @@ Content-Type: application/json
     "adeductionMax": 100000
   }
 ]
+```
+
+Story: EXP05-2 / 3
+- [ ] แอดมิน สามารถกำหนดค่าลดหย่อนส่วนตัวได้โดยไม่เกิน 100,000 บาท
+- [ ] แอดมิน สามารถกำหนด k-receipt สูงสุดได้ แต่ไม่เกิน 100,000 บาท
+- [ ] ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท
+### Story: EXP05-2
+### As admin, I want to setting personal deduction more than 100,000
+POST {{HostAddress}}/admin/deductions/personal
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": 100001.0
+}
+
+Response body
+
+```json
+{
+  "message": "personal deduction must be less than 100000.00"
+}
+```
+
+### Story: EXP05-3
+### As admin, I want to setting personal deduction less than 10,000
+POST {{HostAddress}}/admin/deductions/personal
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": 9999.0
+}
+
+Response body
+
+```json
+{
+  "message": "personal deduction must be less than 100000.00"
+}
 ```

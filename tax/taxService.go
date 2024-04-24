@@ -117,9 +117,9 @@ func TaxStepList() []TaxStep {
 	//Update FriendlyMessage
 	for i, step := range taxStep {
 		if taxStep[i].MaxIncome == 999999999 {
-			taxStep[i].FriendlyMessage = fmt.Sprintf("%s ขึ้นไป", humanize.FormatFloat("#,###.", step.MinIncome))
+			taxStep[i].FriendlyMessage = fmt.Sprintf("%s ขึ้นไป", humanize.FormatFloat("#,###.##", step.MinIncome))
 		} else {
-			taxStep[i].FriendlyMessage = fmt.Sprintf("%s-%s", humanize.FormatFloat("#,###.", step.MinIncome), humanize.FormatFloat("#,###.", step.MaxIncome))
+			taxStep[i].FriendlyMessage = fmt.Sprintf("%s-%s", humanize.FormatFloat("#,###.##", step.MinIncome), humanize.FormatFloat("#,###.", step.MaxIncome))
 		}
 	}
 

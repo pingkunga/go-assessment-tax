@@ -46,7 +46,7 @@ func (p *Repository) SetDeductionConfig(pKey string, newValue float64) error {
 	return nil
 }
 
-func (p *Repository) AllowanceConfigs() ([]DeductionConfig, error) {
+func (p *Repository) DeductionConfigs() ([]DeductionConfig, error) {
 	rows, err := p.Db.Query("SELECT * FROM TAX_DEDUCTIONCONFIG")
 	if err != nil {
 		log.Fatal(err)
@@ -54,15 +54,33 @@ func (p *Repository) AllowanceConfigs() ([]DeductionConfig, error) {
 	}
 	defer rows.Close()
 
-	allowanceConfigs := []DeductionConfig{}
+	deductionConfigs := []DeductionConfig{}
 	for rows.Next() {
-		allowanceConfig := DeductionConfig{}
-		err := rows.Scan(&allowanceConfig.Id, &allowanceConfig.DeductionType, &allowanceConfig.DeductionAmount, &allowanceConfig.DeductionMin, &allowanceConfig.DeductionMax)
+		deductionConfig := DeductionConfig{}
+		err := rows.Scan(&deductionConfig.Id, &deductionConfig.DeductionType, &deductionConfig.DeductionAmount, &deductionConfig.DeductionMin, &deductionConfig.DeductionMax)
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
 		}
-		allowanceConfigs = append(allowanceConfigs, allowanceConfig)
+		deductionConfigs = append(deductionConfigs, deductionConfig)
 	}
-	return allowanceConfigs, nil
+	return deductionConfigs, nil
+}
+
+func (p *Repository) DeductionConfigByType(pKey string) (DeductionConfig, error) {
+	stmt, err := p.Db.Prepare("SELECT * FROM TAX_DEDUCTIONCONFIG WHERE deduction_type = $1")
+	if err != nil {
+		log.Fatal("can't Prepare SQL for "+pKey, err)
+	}
+	rowId := pKey
+	row := stmt.QueryRow(rowId)
+	deductionConfig := DeductionConfig{}
+
+	err = row.Scan(&deductionConfig.Id, &deductionConfig.DeductionType, &deductionConfig.DeductionAmount, &deductionConfig.DeductionMin, &deductionConfig.DeductionMax)
+	if err != nil {
+		log.Fatal(err)
+		return DeductionConfig{}, err
+	}
+
+	return deductionConfig, nil
 }

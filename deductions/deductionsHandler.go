@@ -4,15 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pingkunga/assessment-tax/common"
 )
-
-// type DeductionHandler struct {
-// 	store DeductionStorer
-// }
-
-// func New(db DeductionStorer) *DeductionHandler {
-// 	return &DeductionHandler{store: db}
-// }
 
 // for implement interface
 type DeductionStorer interface {
@@ -37,18 +30,18 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 
 	deductionsResponse, error := h.service.SetPersonalDeduction(debuctionRequest)
 	if error != nil {
-		return c.JSON(http.StatusBadRequest, error)
+		return c.JSON(http.StatusBadRequest, common.Err{Message: error.Error()})
 	}
 
 	return c.JSON(http.StatusOK, deductionsResponse)
 }
 
-func (h *Handler) AllowanceConfigsHandler(c echo.Context) error {
+func (h *Handler) DeductionConfigsHandler(c echo.Context) error {
 
-	allowances, error := h.service.AllowanceConfigs()
+	deduction, error := h.service.DeductionConfigs()
 	if error != nil {
-		return c.JSON(http.StatusBadRequest, error)
+		return c.JSON(http.StatusBadRequest, common.Err{Message: error.Error()})
 	}
 
-	return c.JSON(http.StatusOK, allowances)
+	return c.JSON(http.StatusOK, deduction)
 }
