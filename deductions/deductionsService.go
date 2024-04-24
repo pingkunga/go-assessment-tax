@@ -9,10 +9,17 @@ import (
 )
 
 type Service struct {
-	repo *repo.Repository
+	repo DeductionRepository
 }
 
-func NewService(repo *repo.Repository) *Service {
+type DeductionRepository interface {
+	GetDeductionConfig(pKey string) (float64, error)
+	SetDeductionConfig(pKey string, newValue float64) error
+	DeductionConfigs() ([]repo.DeductionConfig, error)
+	DeductionConfigByType(deductionType string) (repo.DeductionConfig, error)
+}
+
+func NewService(repo DeductionRepository) *Service {
 	return &Service{repo: repo}
 }
 
