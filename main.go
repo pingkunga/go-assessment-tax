@@ -19,7 +19,7 @@ import (
 func main() {
 	db, err := postgres.New()
 	if err != nil {
-		panic(err)
+		panic("Cannot connect to Database, Detail" + err.Error())
 	}
 
 	e := echo.New()
@@ -53,18 +53,43 @@ func main() {
 	authoriedRoute.GET("/deductions", handler.DeductionConfigsHandler)
 	authoriedRoute.POST("/deductions/personal", handler.SetPersonalDeductionHandler)
 
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	/*
+		shutdown := make(chan os.Signal, 1)
+		signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
-	//Start server
+		//Start server
+		go func() {
+			if err := e.Start(":" + APP_PORT); err != nil && err != http.ErrServerClosed { // Start server
+				e.Logger.Fatal("shutting down the server")
+			}
+		}()
+		<-shutdown
+
+		// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := e.Shutdown(ctx); err != nil {
+			e.Logger.Fatal(err)
+		}
+	*/
+
+	// Start server in a goroutine so that it doesn't block
 	go func() {
-		if err := e.Start(":" + APP_PORT); err != nil && err != http.ErrServerClosed { // Start server
+		err := e.Start(":" + APP_PORT)
+		if err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()
-	<-shutdown
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 10 seconds.
+	// 1 = buffer นะ
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscanll.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
