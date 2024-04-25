@@ -12,8 +12,8 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 
 ## Functional Requirement
 
-- [ ] ผู้ใช้งาน สามารถส่งข้อมูลเพื่อคำนวนภาษีได้
-- [ ] ผู้ใช้งาน แสดงภาษีที่ต้องจ่ายหรือได้รับในปีนั้น ๆ ได้
+- [x] ผู้ใช้งาน สามารถส่งข้อมูลเพื่อคำนวนภาษีได้
+- [x] ผู้ใช้งาน แสดงภาษีที่ต้องจ่ายหรือได้รับในปีนั้น ๆ ได้
 - [ ] การคำนวนภาษีคำนวนจาก เงินหัก ณ ที่จ่าย / ค่าลดหย่อนส่วนตัว/ขั้นบันใดภาษี/เงินบริจาค
 - [ ] การคำนวนภาษีตามขั้นบันใด
   - [x] รายได้ 0 - 150,000 ได้รับการยกเว้น
@@ -22,27 +22,40 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
   - [x] 1,000,001 - 2,000,000 อัตราภาษี 20%
   - [ ] มากกว่า 2,000,000 อัตราภาษี 35%
 - [x] เงินบริจาคสามารถหย่อนได้สูงสุด 100,000 บาท
-- [ ] ค่าลดหย่อนส่วนตัวมีค่าเริ่มต้นที่ 60,000 บาท
+- [x] ค่าลดหย่อนส่วนตัวมีค่าเริ่มต้นที่ 60,000 บาท -- Initial จาก DB
 - [ ] k-receipt โครงการช้อปลดภาษี ซึ่งสามารถลดหย่อนได้สูงสุด 50,000 บาทเป็นค่าเริ่มต้น
-- [ ] แอดมิน สามารถกำหนดค่าลดหย่อนส่วนตัวได้โดยไม่เกิน 100,000 บาท
+- [x] แอดมิน สามารถกำหนดค่าลดหย่อนส่วนตัวได้โดยไม่เกิน 100,000 บาท
 - [ ] แอดมิน สามารถกำหนด k-receipt สูงสุดได้ แต่ไม่เกิน 100,000 บาท
-- [ ] ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท
+- [x] ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท
 - [ ] ค่าลด k-receipt ต้องมีค่ามากกว่า 0 บาท
 - [x] ในกรณีที่รายรับ รวมหักค่าลดหย่อน พร้อมทั้ง wht พบว่าต้องได้เงินคืน จะต้องคำนวนเงินที่ต้องได้รับคืนใน field ใหม่ ที่ชื่อว่า taxRefund
 
 ## Non-Functional Requirement
 - [ ] มี `Unit Test` ครอบคลุม
 - [ ] ใช้ `go module`
-- [x] ใช้ go module `go mod init github.com/<your github name>/go-assessment-tax`
+- [x] ใช้ go module `go mod init github.com/<your github name>/assessment-tax`
 - [x] ใช้ go 1.21 or above
-- [ ] ใช้ `PostgreSQL`
+- [x] ใช้ `PostgreSQL`
 - [x] API port _MUST_ get from `environment variable` name `PORT`
-- [ ] database url _MUST_ get from environment variable name `DATABASE_URL`
+- [x] database url _MUST_ get from environment variable name `DATABASE_URL`
   - ตัวอย่าง `DATABASE_URL=host={REPLACE_ME} port=5432 user={REPLACE_ME} password={REPLACE_ME} dbname={REPLACE_ME} sslmode=disable`
-- [ ] ใช้ `docker compose` สำหรับต่อ Database
+- [x] ใช้ `docker compose` สำหรับต่อ Database
 - [ ] API support `Graceful Shutdown`
   - เช่น ถ้ามีการกด `Ctrl + C` จะ print `shutting down the server`
-- [ ] มี Dockerfile สำหรับ build image และเป็น `Multi-stage build`
+- [x] มี Dockerfile สำหรับ build image และเป็น `Multi-stage build`
+
+'''
+docker build  -t gotax:1.0.0 .
+
+$env:PORT="8080"
+$env:ADMIN_USERNAME="adminTax"
+$env:ADMIN_PASSWORD="admin!"
+$env:DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable"
+
+docker run -p 8080:8080 -e DATABASE_URL="host=192.168.0.72 port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" -e ADMIN_USERNAME="adminTax" -e ADMIN_PASSWORD="admin!" gotax:1.0.0
+
+'''
+
 - [ ] ใช้ `HTTP Method` และ `HTTP Status Code` อย่างเหมาะสม
 - [ ] ใช้ `gofmt` และ `go vet`
 - [ ] แยก Branch ของแต่ละ Story ออกจาก `main` และ Merge กลับไปยัง `main` Branch เสมอ
@@ -62,7 +75,7 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 ## Assumption
 
 - รองรับแค่ปีเดียวคือ 2567
-- ไม่มีเก็บข้อมูลภาษีของผู้ใช้งาน
+- [x] ไม่มีเก็บข้อมูลภาษีของผู้ใช้งาน
 - อัตราภาษีไม่มีการเปลี่ยนแปลงในอนาคต
 - [x] ค่าลดหย่อนมีได้ 3 ชนิดเท่านั้น ค่าลดหย่อนส่วนตัว/เงินบริจาค/ช้อปปลดภาษี
 - [x] ค่าลดหย่อนที่จะส่งเข้ามาคำนวนไม่มีค่าน้อยกว่า 0
@@ -274,6 +287,8 @@ Response body
 ----
 
 ### Story: EXP05
+
+- [x] IS OK
 
 ```
 * As admin, I want to setting personal deduction

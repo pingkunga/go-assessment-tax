@@ -3,12 +3,12 @@ module github.com/pingkunga/assessment-tax
 go 1.21.9
 
 require (
+	github.com/dustin/go-humanize v1.0.1
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/stretchr/testify v1.8.4
 )
 
 require (
-	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	golang.org/x/time v0.5.0 // indirect
 )

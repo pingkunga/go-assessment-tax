@@ -7,7 +7,6 @@ GET {{HostAddress}}/hello-world
 ### As a user, As user, I want to calculate my tax
 
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -33,7 +32,6 @@ Response body
 ### As user, I want to calculate my tax with Income 2,000,001
 
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -75,7 +73,6 @@ Response body
 ### Story: EXP02
 ### As user, I want to calculate my tax with WHT
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -101,7 +98,6 @@ Response body
 ### Story: EXP03
 ### As user, I want to calculate my tax donation
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -127,7 +123,6 @@ Response body
 ### Story: EXP03-1
 ### As user, I want to calculate my tax donation and have taxRefund
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -153,7 +148,6 @@ Response body
 ### Story: EXP04
 ### As user, I want to calculate my tax with tax level detail
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -201,7 +195,7 @@ Response body
 ### Story: ERROR
 ### As a user, I want to get error message when I input invalid data such as negative number
 POST {{HostAddress}}/tax/calculations
-Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+#Authorization: Basic YWRtaW5UYXg6YWRtaW4h
 Content-Type: application/json
 
 {
@@ -214,3 +208,92 @@ Content-Type: application/json
     }
   ]
 }
+
+Response body
+
+```json
+"ValidateError: WHT is less than 0\nAllowance amount is less than 0"
+```
+
+### Story: EXP05
+### As admin, I want to setting personal deduction ในฐานะ Admin ฉันต้องการตั้งค่าลดหย่อนส่วนตัว
+POST {{HostAddress}}/admin/deductions/personal
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": 70000.0
+}
+
+Response body
+
+```json
+{
+  "personalDeduction": 70000.0
+}
+```
+
+### Story: EXP05-1
+### As admin, I want to list deductions
+GET {{HostAddress}}/admin/deductions
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+```json
+[
+  {
+    "id": 1,
+    "deductionType": "personal",
+    "deductionAmount": 60000,
+    "deductionMin": 10000,
+    "adeductionMax": 100000
+  },
+  {
+    "id": 2,
+    "deductionType": "k-receipt",
+    "deductionAmount": 50000,
+    "deductionMin": 0,
+    "adeductionMax": 100000
+  }
+]
+```
+
+Story: EXP05-2 / 3
+- [ ] แอดมิน สามารถกำหนดค่าลดหย่อนส่วนตัวได้โดยไม่เกิน 100,000 บาท
+- [ ] แอดมิน สามารถกำหนด k-receipt สูงสุดได้ แต่ไม่เกิน 100,000 บาท
+- [ ] ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท
+### Story: EXP05-2
+### As admin, I want to setting personal deduction more than 100,000
+POST {{HostAddress}}/admin/deductions/personal
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": 100001.0
+}
+
+Response body
+
+```json
+{
+  "message": "personal deduction must be less than 100000.00"
+}
+```
+
+### Story: EXP05-3
+### As admin, I want to setting personal deduction less than 10,000
+POST {{HostAddress}}/admin/deductions/personal
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": 9999.0
+}
+
+Response body
+
+```json
+{
+  "message": "personal deduction must be less than 100000.00"
+}
+```
