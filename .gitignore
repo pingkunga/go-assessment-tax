@@ -24,3 +24,6 @@ go.work
 
 #env file
 dev.env
+
+#Dev Contents
+Uploads

@@ -297,3 +297,28 @@ Response body
   "message": "personal deduction must be less than 100000.00"
 }
 ```
+
+### Story: EXP06
+### * As user, I want to calculate my tax with csv
+### * ในฐานะผู้ใช้ ฉันต้องการคำนวนภาษีด้วยข้อมูลที่ upload เป็น csv และมี validation เช่น ใส่ empty ไม่ได้ หรือ ใส่ข้อมูลผิด format ไม่ได้
+POST {{HostAddress}}/tax/calculations/upload-csv
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW 
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="taxFile"; filename="taxes.csv" 
+Content-Type: text/csv
+
+< ./sampleCSV/taxes.csv 
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+Response body
+
+```json
+ "taxes": [
+    {
+      "totalIncome": 500000.0,
+      "tax": 29000.0
+    },
+    ...
+  ]
+```
