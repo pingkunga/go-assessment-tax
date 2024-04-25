@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -25,6 +29,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.GET("/hello-world", func(c echo.Context) error {
+		time.Sleep(5 * time.Second)
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
 	})
 
@@ -48,7 +53,23 @@ func main() {
 	authoriedRoute.GET("/deductions", handler.DeductionConfigsHandler)
 	authoriedRoute.POST("/deductions/personal", handler.SetPersonalDeductionHandler)
 
-	e.Logger.Fatal(e.Start(":" + APP_PORT))
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+	//Start server
+	go func() {
+		if err := e.Start(":" + APP_PORT); err != nil && err != http.ErrServerClosed { // Start server
+			e.Logger.Fatal("shutting down the server")
+		}
+	}()
+	<-shutdown
+
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
 }
 
 var ADMIN_USERNAME string
