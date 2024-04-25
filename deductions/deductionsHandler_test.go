@@ -74,6 +74,4 @@ func TestSetPersonalDeductionHandler(t *testing.T) {
 		assert.EqualValues(t, http.StatusBadRequest, rec.Code)
 		assert.EqualValues(t, "{\"message\":\"personal deduction must be greater than 10,000.00\"}\n", rec.Body.String())
 	})
-
-	//Validate Error
 }
