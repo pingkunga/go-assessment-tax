@@ -198,12 +198,11 @@ func createAllowances(row []string, rowId int) (allowances []Allowance, err erro
 	}
 	allowances = append(allowances, allowanceDonation)
 	//k-receipt
-
-	allowanceKReceipt, err := createAllowance(DEDUCTION_K_RECEIPT, row[3], rowId)
-	if err != nil {
-		return nil, err
-	}
-	allowances = append(allowances, allowanceKReceipt)
+	// allowanceKReceipt, err := createAllowance(DEDUCTION_K_RECEIPT, row[3], rowId)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// allowances = append(allowances, allowanceKReceipt)
 
 	return allowances, nil
 }
@@ -229,9 +228,9 @@ func ValidateHeader(header []string) (err error) {
 	if header[2] != "donation" {
 		errors.Join(err, errors.New("Invalid header donation"))
 	}
-	if header[3] != "k-receipt" {
-		errors.Join(err, errors.New("Invalid header k-receipt"))
-	}
+	// if header[3] != "k-receipt" {
+	// 	errors.Join(err, errors.New("Invalid header k-receipt"))
+	// }
 
 	return err
 }
