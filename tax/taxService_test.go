@@ -171,3 +171,71 @@ func TestValidateTaxRequest(t *testing.T) {
 	})
 
 }
+
+func TestImportTaxCSV(t *testing.T) {
+	t.Run("Story: EXP04-0: As user, I want to import tax csv file with good format, should success", func(t *testing.T) {
+		testFile := "../sampleCSV/taxes.csv"
+
+		taxRequestsActual, err := ImportTaxCSV(testFile)
+
+		taxRequestsExp := []TaxRequest{
+			{
+				TotalIncome: 500000.0,
+				WHT:         0.0,
+				Allowances: []Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        0.0,
+					},
+				},
+			},
+			{
+				TotalIncome: 600000.0,
+				WHT:         40000.0,
+
+				Allowances: []Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        20000.0,
+					},
+				},
+			},
+			{
+				TotalIncome: 750000.0,
+				WHT:         50000.0,
+				Allowances: []Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        15000.0,
+					},
+				},
+			},
+		}
+
+		assert.Nil(t, err)
+		assert.Equal(t, 3, len(taxRequestsActual))
+
+		assert.Equal(t, taxRequestsExp, taxRequestsActual)
+	})
+
+	t.Run("Story: EXP04-1: As user, I want to import tax csv file but file not found, should return error Open CSV file at: xxxx", func(t *testing.T) {
+		testFile := "../sampleCSV/taxes_notfoud.csv"
+
+		taxRequestsActual, err := ImportTaxCSV(testFile)
+
+		assert.Error(t, err)
+		assert.Nil(t, taxRequestsActual)
+	})
+
+	t.Run("Story: EXP04-2: As user, I want to import tax csv file with bad format, should return error", func(t *testing.T) {
+		testFile := "../sampleCSV/taxes_bad.csv"
+
+		taxRequestsActual, err := ImportTaxCSV(testFile)
+
+		assert.Error(t, err)
+		assert.Nil(t, taxRequestsActual)
+
+		assert.Equal(t, "invalid header donation\nerror parse totalIncome at row 1\nerror parse totalIncome at row 2\nerror parse wht at row 3", err.Error())
+
+	})
+}

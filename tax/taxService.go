@@ -1,8 +1,13 @@
 package tax
 
 import (
+	"encoding/csv"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 
 	"github.com/dustin/go-humanize"
 )
@@ -124,4 +129,136 @@ func TaxStepList() []TaxStep {
 	}
 
 	return taxStep
+}
+
+func CalculateTaxBatch(taxs []TaxRequest) (TaxBatchsResponse, error) {
+	var taxBatchs []TaxBatchResponse
+	for _, tax := range taxs {
+		taxResponse := CalculateTax(tax)
+		taxBatchs = append(taxBatchs, TaxBatchResponse{TotalIncome: tax.TotalIncome, Tax: taxResponse.Tax, TaxRefund: taxResponse.TaxRefund})
+	}
+	return TaxBatchsResponse{Taxes: taxBatchs}, nil
+}
+
+func ImportTaxCSV(pathToFile string) (taxls []TaxRequest, errTax error) {
+
+	if _, err := os.Stat(pathToFile); err != nil {
+		return nil, errors.Join(errTax, fmt.Errorf("error Open CSV file at: %s", pathToFile))
+	}
+
+	csvFile, err := os.Open(pathToFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer csvFile.Close()
+
+	//parse csv file
+	reader := csv.NewReader(csvFile)
+	reader.FieldsPerRecord = -1
+
+	csvData, err := reader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+		return nil, errors.Join(errTax, fmt.Errorf("error read CSV file at: %s", pathToFile))
+	}
+
+	//loop through each row
+	var taxRequests []TaxRequest
+	var header []string
+	for i, row := range csvData {
+		if i == 0 {
+			header = row
+			errHead := ValidateHeader(header)
+			errTax = concatenateError(errTax, errHead)
+			continue
+		}
+
+		totalIncome, err := ParseFloatForImport(header[0], row[0], i)
+		errTax = concatenateError(errTax, err)
+
+		wht, err := ParseFloatForImport(header[1], row[1], i)
+		errTax = concatenateError(errTax, err)
+
+		allowances, err := createAllowances(header, row, i)
+		errTax = concatenateError(errTax, err)
+
+		//Add Result
+		if errTax == nil {
+			TaxRequest := TaxRequest{
+				TotalIncome: totalIncome,
+				WHT:         wht,
+				Allowances:  allowances,
+			}
+			taxRequests = append(taxRequests, TaxRequest)
+		}
+	}
+
+	if errTax != nil {
+		return nil, errTax
+	}
+
+	//validate each row
+	return taxRequests, nil
+}
+
+func concatenateError(err error, err2 error) error {
+	if err != nil {
+		return errors.Join(err, err2)
+	}
+	return err2
+}
+
+func createAllowances(heading []string, row []string, rowId int) (allowances []Allowance, err error) {
+
+	//donation
+	allowanceDonation, err := createAllowance(DEDUCTION_DONATION, heading[2], row[2], rowId)
+	if err != nil {
+		return nil, err
+	}
+	allowances = append(allowances, allowanceDonation)
+	//k-receipt
+	// allowanceKReceipt, err := createAllowance(DEDUCTION_K_RECEIPT, row[3], rowId)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// allowances = append(allowances, allowanceKReceipt)
+
+	return allowances, nil
+}
+
+func createAllowance(pHead string, pType string, pValue string, rowId int) (allowance Allowance, err error) {
+	allowanceType := pType
+	allowanceAmount, err := ParseFloatForImport(pHead, strings.TrimSpace(pValue), rowId)
+	allowance = Allowance{AllowanceType: allowanceType, Amount: allowanceAmount}
+	return allowance, err
+}
+
+func ValidateHeader(header []string) (err error) {
+	//totalIncome,wht,donation,k-receipt
+	if len(header) != 3 {
+		err = errors.Join(err, errors.New("invalid header count"))
+	}
+	if strings.TrimSpace(header[0]) != "totalIncome" {
+		err = errors.Join(err, errors.New("invalid header totalIncome"))
+	}
+	if strings.TrimSpace(header[1]) != "wht" {
+		err = errors.Join(err, errors.New("invalid header wht"))
+	}
+	if strings.TrimSpace(header[2]) != "donation" {
+		err = errors.Join(err, errors.New("invalid header donation"))
+	}
+	// if strings.TrimSpace(header[3]) != "k-receipt" {
+	// 	err = errors.Join(err, errors.New("Invalid header k-receipt"))
+	// }
+
+	return
+}
+
+func ParseFloatForImport(pFieldName string, pValue string, rowId int) (floatValue float64, err error) {
+	floatResult, errCast := strconv.ParseFloat(strings.TrimSpace(pValue), 64)
+	if errCast != nil {
+		return 0.0, errors.Join(err, fmt.Errorf("error parse %s at row %d", pFieldName, rowId))
+	}
+	floatValue = floatResult
+	return floatValue, nil
 }

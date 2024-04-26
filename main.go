@@ -34,7 +34,7 @@ func main() {
 	})
 
 	e.POST("/tax/calculations", tax.CalculationsHandler)
-
+	e.POST("/tax/calculations/upload-csv", tax.BatchCalculationsHandler)
 	//Authorized
 	authoriedRoute := e.Group("/admin")
 
