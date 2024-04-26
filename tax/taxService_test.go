@@ -217,4 +217,13 @@ func TestImportTaxCSV(t *testing.T) {
 
 		assert.Equal(t, taxRequestsExp, taxRequestsActual)
 	})
+
+	t.Run("Story: EXP04-1: As user, I want to import tax csv file with bad format, should return error", func(t *testing.T) {
+		testFile := "../sampleCSV/taxes_bad.csv"
+
+		taxRequestsActual, err := ImportTaxCSV(testFile)
+
+		assert.NotNil(t, err)
+		assert.Nil(t, taxRequestsActual)
+	})
 }

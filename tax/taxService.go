@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/dustin/go-humanize"
 )
@@ -209,7 +210,7 @@ func createAllowances(row []string, rowId int) (allowances []Allowance, err erro
 
 func createAllowance(pType string, pValue string, rowId int) (allowance Allowance, err error) {
 	allowanceType := pType
-	allowanceAmount, err := ParseFloatForImport(pValue, "Allowance Amount", rowId)
+	allowanceAmount, err := ParseFloatForImport(strings.TrimSpace(pValue), "Allowance Amount", rowId)
 	allowance = Allowance{AllowanceType: allowanceType, Amount: allowanceAmount}
 	return allowance, err
 }
