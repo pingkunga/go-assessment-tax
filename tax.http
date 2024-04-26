@@ -321,4 +321,26 @@ Response body
     },
     ...
   ]
+
+full
+
+{
+  "taxes": [
+    {
+      "totalIncome": 500000,
+      "tax": 29000,
+      "taxRefund": 0
+    },
+    {
+      "totalIncome": 600000,
+      "tax": 0,
+      "taxRefund": 3000
+    },
+    {
+      "totalIncome": 750000,
+      "tax": 3750,
+      "taxRefund": 0
+    }
+  ]
+}
 ```

@@ -60,7 +60,22 @@ func BatchCalculationsHandler(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, "File uploaded successfully")
+	//Process
+	taxRequests, err := ImportTaxCSV(filepath.Join("Uploads", file.Filename))
+
+	//Clear file
+	_ = os.Remove(filepath.Join("Uploads", file.Filename))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("ImportError: %v", err.Error()))
+	}
+
+	//Calculate
+	taxBatchsResponse, err := CalculateTaxBatch(taxRequests)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("CalculateError: %v", err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, taxBatchsResponse)
 }
 
 func CheckBatchTxPath(p string) {

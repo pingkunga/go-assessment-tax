@@ -218,12 +218,24 @@ func TestImportTaxCSV(t *testing.T) {
 		assert.Equal(t, taxRequestsExp, taxRequestsActual)
 	})
 
-	t.Run("Story: EXP04-1: As user, I want to import tax csv file with bad format, should return error", func(t *testing.T) {
+	t.Run("Story: EXP04-1: As user, I want to import tax csv file but file not found, should return error Open CSV file at: xxxx", func(t *testing.T) {
+		testFile := "../sampleCSV/taxes_notfoud.csv"
+
+		taxRequestsActual, err := ImportTaxCSV(testFile)
+
+		assert.Error(t, err)
+		assert.Nil(t, taxRequestsActual)
+	})
+
+	t.Run("Story: EXP04-2: As user, I want to import tax csv file with bad format, should return error", func(t *testing.T) {
 		testFile := "../sampleCSV/taxes_bad.csv"
 
 		taxRequestsActual, err := ImportTaxCSV(testFile)
 
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 		assert.Nil(t, taxRequestsActual)
+
+		assert.Equal(t, "invalid header donation\nerror parse totalIncome at row 1\nerror parse totalIncome at row 2\nerror parse wht at row 3", err.Error())
+
 	})
 }
