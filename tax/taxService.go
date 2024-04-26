@@ -1,8 +1,12 @@
 package tax
 
 import (
+	"encoding/csv"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
 	"github.com/dustin/go-humanize"
 )
@@ -124,4 +128,119 @@ func TaxStepList() []TaxStep {
 	}
 
 	return taxStep
+}
+
+func ImportTaxCSV(pathToFile string) (taxls []TaxRequest, err error) {
+
+	//read file from path e.g. Uploads/taxes.csv
+	csvFile, err := os.Open(pathToFile)
+	if err != nil {
+		log.Fatal(err)
+		return nil, errors.New("Error Open CSV file at: " + pathToFile)
+	}
+	defer csvFile.Close()
+
+	//parse csv file
+	reader := csv.NewReader(csvFile)
+	reader.FieldsPerRecord = -1
+
+	csvData, err := reader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+		return nil, errors.New("Error read CSV file at: " + pathToFile)
+	}
+	//loop through each row
+	var taxRequests []TaxRequest
+	for i, row := range csvData {
+		if i == 0 {
+			if err := ValidateHeader(row); err != nil {
+				log.Fatal(err)
+				return nil, errors.New(fmt.Sprintf("Error validate header at row %d", i))
+			} else {
+				continue
+			}
+		}
+		totalIncome, err := strconv.ParseFloat(row[0], 64)
+		if err != nil {
+			log.Fatal(err)
+			return nil, errors.New(fmt.Sprintf("Error parse TotalIncome at row %d", i))
+		}
+
+		wht, err := strconv.ParseFloat(row[1], 64)
+		if err != nil {
+			log.Fatal(err)
+			return nil, errors.New(fmt.Sprintf("Error parse WHT at row %d", i))
+		}
+		allowances, err := createAllowances(row, i)
+		if err != nil {
+			log.Fatal(err)
+			return nil, errors.New(fmt.Sprintf("Error create Allowances at row %d", i))
+		}
+
+		TaxRequest := TaxRequest{
+			TotalIncome: totalIncome,
+			WHT:         wht,
+			Allowances:  allowances,
+		}
+		taxRequests = append(taxRequests, TaxRequest)
+	}
+
+	//validate each row
+	return taxRequests, nil
+}
+
+func createAllowances(row []string, rowId int) (allowances []Allowance, err error) {
+
+	//donation
+	allowanceDonation, err := createAllowance(DEDUCTION_DONATION, row[2], rowId)
+	if err != nil {
+		return nil, err
+	}
+	allowances = append(allowances, allowanceDonation)
+	//k-receipt
+
+	allowanceKReceipt, err := createAllowance(DEDUCTION_K_RECEIPT, row[3], rowId)
+	if err != nil {
+		return nil, err
+	}
+	allowances = append(allowances, allowanceKReceipt)
+
+	return allowances, nil
+}
+
+func createAllowance(pType string, pValue string, rowId int) (allowance Allowance, err error) {
+	allowanceType := pType
+	allowanceAmount, err := ParseFloatForImport(pValue, "Allowance Amount", rowId)
+	allowance = Allowance{AllowanceType: allowanceType, Amount: allowanceAmount}
+	return allowance, err
+}
+
+func ValidateHeader(header []string) (err error) {
+	//totalIncome,wht,donation,k-receipt
+	if len(header) != 4 {
+		errors.Join(err, errors.New("Invalid header"))
+	}
+	if header[0] != "totalIncome" {
+		errors.Join(err, errors.New("Invalid header totalIncome"))
+	}
+	if header[1] != "wht" {
+		errors.Join(err, errors.New("Invalid header wht"))
+	}
+	if header[2] != "donation" {
+		errors.Join(err, errors.New("Invalid header donation"))
+	}
+	if header[3] != "k-receipt" {
+		errors.Join(err, errors.New("Invalid header k-receipt"))
+	}
+
+	return err
+}
+
+func ParseFloatForImport(pValue string, pFieldName string, rowId int) (floatValue float64, err error) {
+	floatResult, err := strconv.ParseFloat(pValue, 64)
+	if err != nil {
+		return 0.0, errors.Join(err, errors.New(fmt.Sprintf("Error parse %s at row %d", pFieldName, rowId)))
+	}
+	floatValue = floatResult
+	return floatValue, nil
 }

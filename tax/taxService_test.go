@@ -171,3 +171,14 @@ func TestValidateTaxRequest(t *testing.T) {
 	})
 
 }
+
+func TestImportTaxCSV(t *testing.T) {
+	t.Run("Story: EXP04-0: As user, I want to import tax csv file", func(t *testing.T) {
+		testFile := "../sampleCSV/taxes.csv"
+
+		taxRequests, err := ImportTaxCSV(testFile)
+
+		assert.Nil(t, err)
+		assert.Equal(t, 3, len(taxRequests))
+	})
+}

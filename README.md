@@ -44,7 +44,7 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
   - เช่น ถ้ามีการกด `Ctrl + C` จะ print `shutting down the server`
 - [x] มี Dockerfile สำหรับ build image และเป็น `Multi-stage build`
 
-'''
+```
 docker build  -t gotax:1.0.0 .
 
 $env:PORT="8080"
@@ -54,7 +54,7 @@ $env:DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbna
 
 docker run -p 8080:8080 -e DATABASE_URL="host=192.168.0.72 port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" -e ADMIN_USERNAME="adminTax" -e ADMIN_PASSWORD="admin!" gotax:1.0.0
 
-'''
+```
 
 - [ ] ใช้ `HTTP Method` และ `HTTP Status Code` อย่างเหมาะสม
 - [ ] ใช้ `gofmt` และ `go vet`
@@ -70,6 +70,16 @@ docker run -p 8080:8080 -e DATABASE_URL="host=192.168.0.72 port=5432 user=postgr
 	- `export DATABASE_URL={REPLACE_ME}`
 	- `export ADMIN_USERNAME=adminTax`
 	- `export ADMIN_PASSWORD=admin!`
+
+```
+for windows 
+
+$env:PORT="8080"
+$env:ADMIN_USERNAME="adminTax"
+$env:ADMIN_PASSWORD="admin!"
+$env:DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable"
+```
+
 - [x] port ของ api จะต้องเป็น 8080
 
 ## Assumption
