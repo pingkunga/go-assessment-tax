@@ -1,10 +1,13 @@
 package tax
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -119,4 +122,86 @@ func TestTaxHandler_CalculationsHandler(t *testing.T) {
 		assert.EqualValues(t, http.StatusBadRequest, rec.Code)
 		assert.EqualValues(t, expectedTaxReponse, actualTaxReponse)
 	})
+}
+
+func TestTaxHandler_BatchCalculationsHandler(t *testing.T) {
+	t.Run("Given BatchCalculationsHandler with match Schema, Should Successfully", func(t *testing.T) {
+		e := echo.New()
+
+		//https://stackoverflow.com/questions/43904974/testing-go-http-request-formfile
+		//Create Multi-Part
+		path := "../sampleCSV/taxes.csv"
+
+		body := new(bytes.Buffer)
+		writer := multipart.NewWriter(body)
+		part, err := writer.CreateFormFile("taxFile", path)
+		assert.NoError(t, err)
+		sample, err := os.Open(path)
+		assert.NoError(t, err)
+
+		_, err = io.Copy(part, sample)
+		assert.NoError(t, err)
+		assert.NoError(t, writer.Close())
+
+		// Source
+		req := httptest.NewRequest(http.MethodPost, "/tax/calculations/upload-csv", body)
+		req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		service := NewService(MockDeductuinService())
+		handler := NewHandler(service)
+
+		err = handler.BatchCalculationsHandler(c)
+
+		assert.NoError(t, err)
+		assert.EqualValues(t, http.StatusOK, rec.Code)
+
+		var actualTaxReponse TaxBatchsResponse
+		json.NewDecoder(rec.Body).Decode(&actualTaxReponse)
+
+		/*
+			"taxes": [
+				{
+				"totalIncome": 500000,
+				"tax": 29000,
+				"taxRefund": 0
+				},
+				{
+				"totalIncome": 600000,
+				"tax": 0,
+				"taxRefund": 3000
+				},
+				{
+				"totalIncome": 750000,
+				"tax": 3750,
+				"taxRefund": 0
+				}
+			]
+		*/
+		var expectedTaxReponse = TaxBatchsResponse{
+			Taxes: []TaxBatchResponse{
+				{
+					TotalIncome: 500000.0,
+					Tax:         29000.0,
+					TaxRefund:   0.0,
+				},
+				{
+					TotalIncome: 600000.0,
+					Tax:         0.0,
+					TaxRefund:   3000.0,
+				},
+				{
+					TotalIncome: 750000.0,
+					Tax:         3750.0,
+					TaxRefund:   0.0,
+				},
+			},
+		}
+
+		assert.Equal(t, expectedTaxReponse, actualTaxReponse)
+
+	})
+
 }
