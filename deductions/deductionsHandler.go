@@ -14,7 +14,7 @@ type DeductionHandler struct {
 
 type IDeductionService interface {
 	SetPersonalDeduction(request DebuctionRequest) (PersonalDeductionResponse, error)
-	SetKPlustDeduction(request DebuctionRequest) (KReceiptResponse, error)
+	SetKReceiptDeduction(request DebuctionRequest) (KReceiptResponse, error)
 	GetPersonalDeduction() (PersonalDeductionResponse, error)
 	DeductionConfigs() ([]repo.DeductionConfig, error)
 }
@@ -31,6 +31,21 @@ func (h *DeductionHandler) SetPersonalDeductionHandler(c echo.Context) error {
 	}
 
 	deductionsResponse, error := h.service.SetPersonalDeduction(debuctionRequest)
+	if error != nil {
+		return c.JSON(http.StatusBadRequest, common.Err{Message: error.Error()})
+	}
+
+	return c.JSON(http.StatusOK, deductionsResponse)
+}
+
+func (h *DeductionHandler) SetKReceiptDeductionHandler(c echo.Context) error {
+
+	var debuctionRequest DebuctionRequest
+	if err := c.Bind(&debuctionRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	deductionsResponse, error := h.service.SetKReceiptDeduction(debuctionRequest)
 	if error != nil {
 		return c.JSON(http.StatusBadRequest, common.Err{Message: error.Error()})
 	}

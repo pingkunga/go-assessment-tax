@@ -260,7 +260,6 @@ Content-Type: application/json
 
 Story: EXP05-2 / 3
 - [ ] แอดมิน สามารถกำหนดค่าลดหย่อนส่วนตัวได้โดยไม่เกิน 100,000 บาท
-- [ ] แอดมิน สามารถกำหนด k-receipt สูงสุดได้ แต่ไม่เกิน 100,000 บาท
 - [ ] ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท
 ### Story: EXP05-2
 ### As admin, I want to setting personal deduction more than 100,000
@@ -394,5 +393,64 @@ Response body
       "tax": 0.0
     }
   ]
+}
+```
+
+### Story: EXP08-0
+###  As admin, I want to setting k-receipt deduction ในฐานะ Admin ฉันต้องการตั้งค่า k-receipt สำหรับลดหย่อน
+POST {{HostAddress}}/admin/deductions/k-receipt
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": 70000.0
+}
+
+Response body
+
+//50000
+
+```json
+{
+  "kReceipt": 70000.0
+}
+```
+
+
+
+### Story: EXP08-1
+###- [ ] แอดมิน สามารถกำหนด k-receipt สูงสุดได้ แต่ไม่เกิน 100,000 บาท
+###  As admin, I want to setting k-receipt deduction more than 100,000
+POST {{HostAddress}}/admin/deductions/k-receipt
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": 100001.0
+}
+
+Response body
+
+```json
+{
+  "message": "k-receipt deduction must be less than 100,000.00"
+}
+```
+
+### Story: EXP05-3
+### As admin, I want to setting personal deduction less than 0.0
+POST {{HostAddress}}/admin/deductions/k-receipt
+Authorization: Basic YWRtaW5UYXg6YWRtaW4h
+Content-Type: application/json
+
+{
+  "amount": -1.0
+}
+
+Response body
+
+```json
+{
+  "message": "k-receipt deduction must be greater than 0.00"
 }
 ```
