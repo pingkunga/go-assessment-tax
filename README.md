@@ -14,7 +14,7 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 
 - [x] ผู้ใช้งาน สามารถส่งข้อมูลเพื่อคำนวนภาษีได้
 - [x] ผู้ใช้งาน แสดงภาษีที่ต้องจ่ายหรือได้รับในปีนั้น ๆ ได้
-- [ ] การคำนวนภาษีคำนวนจาก เงินหัก ณ ที่จ่าย / ค่าลดหย่อนส่วนตัว/ขั้นบันใดภาษี/เงินบริจาค
+- [x] การคำนวนภาษีคำนวนจาก เงินหัก ณ ที่จ่าย / ค่าลดหย่อนส่วนตัว/ขั้นบันใดภาษี/เงินบริจาค
 - [ ] การคำนวนภาษีตามขั้นบันใด
   - [x] รายได้ 0 - 150,000 ได้รับการยกเว้น
   - [x] 150,001 - 500,000 อัตราภาษี 10%
@@ -57,13 +57,16 @@ docker run -p 8080:8080 -e DATABASE_URL="host=192.168.0.72 port=5432 user=postgr
 ```
 
 - [ ] ใช้ `HTTP Method` และ `HTTP Status Code` อย่างเหมาะสม
+
+https://stackoverflow.com/questions/3290182/which-status-code-should-i-use-for-failed-validations-or-invalid-duplicates
+
 - [ ] ใช้ `gofmt` และ `go vet`
-- [ ] แยก Branch ของแต่ละ Story ออกจาก `main` และ Merge กลับไปยัง `main` Branch เสมอ
+- [x] แยก Branch ของแต่ละ Story ออกจาก `main` และ Merge กลับไปยัง `main` Branch เสมอ
   - เช่น story ที่ 1 จะใช้ branch ชื่อ `feature/story-1` หรือ `feature/store-1-create-tax-calculation`
 - [x] admin กำหนด Basic authen ด้วย username: `adminTax`, password: `admin!`
   - username และ password ต้องเป็น environment variable
   - และ `env` ต้องเป็นชื่อ `ADMIN_USERNAME` และ `ADMIN_PASSWORD`
-- [ ] **การ run program จะใช้คำสั่ง docker compose up เพื่อเตรียม environment และ go run main.go เพื่อ start api**
+- [x] **การ run program จะใช้คำสั่ง docker compose up เพื่อเตรียม environment และ go run main.go เพื่อ start api**
   - **หากต้องมีการใช้คำสั่งอื่น ๆ เพื่อทำให้โปรแกรมทำงานได้ จะไม่นับคะแนนหรือถูกหักคะแนน**
   - การตรวจจะทำการ export `env` ไว้ล่วงหน้าก่อนรัน ดังนี้
 	- `export PORT=8080`
@@ -361,6 +364,8 @@ Response body
 -------
 ### Story: EXP07
 
+- [x] IS OK
+
 ```
 * As user, I want to calculate my tax with tax level detail
 ในฐานะผู้ใช้ ฉันต้องการคำนวนภาษีจาก ข้อมูลที่ส่งให้พร้อมค่าลดหย่อน พร้อมระบุรายละเอียดของขั้นบันใดภาษี
@@ -432,6 +437,8 @@ Response body
 ----
 
 ### Story: EXP08
+
+- [x] IS OK
 
 ```
 * As admin, I want to setting k-receipt deduction
