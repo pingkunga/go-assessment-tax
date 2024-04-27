@@ -14,6 +14,8 @@ type DeductionHandler struct {
 
 type IDeductionService interface {
 	SetPersonalDeduction(request DebuctionRequest) (PersonalDeductionResponse, error)
+	SetKPlustDeduction(request DebuctionRequest) (KReceiptResponse, error)
+	GetPersonalDeduction() (PersonalDeductionResponse, error)
 	DeductionConfigs() ([]repo.DeductionConfig, error)
 }
 

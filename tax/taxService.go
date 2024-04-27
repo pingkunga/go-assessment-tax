@@ -108,7 +108,14 @@ func ValidateTaxRequest(tax TaxRequest) (err error) {
 }
 
 func (s *TaxService) PersonalDeduction() float64 {
-	return 60000
+	//return 60000
+
+	//Get Personal Deduction from Deduction Service
+	personalDeduction, err := s.deductsvc.GetPersonalDeduction()
+	if err != nil {
+		return 60000
+	}
+	return personalDeduction.PersonalDeduction
 }
 
 /*
@@ -131,9 +138,9 @@ func TaxStepList() []TaxStep {
 	//Update FriendlyMessage
 	for i, step := range taxStep {
 		if taxStep[i].MaxIncome == 999999999 {
-			taxStep[i].FriendlyMessage = fmt.Sprintf("%s ขึ้นไป", humanize.FormatFloat("#,###.##", step.MinIncome))
+			taxStep[i].FriendlyMessage = fmt.Sprintf("%s ขึ้นไป", humanize.FormatFloat("#,###.", step.MinIncome))
 		} else {
-			taxStep[i].FriendlyMessage = fmt.Sprintf("%s-%s", humanize.FormatFloat("#,###.##", step.MinIncome), humanize.FormatFloat("#,###.", step.MaxIncome))
+			taxStep[i].FriendlyMessage = fmt.Sprintf("%s-%s", humanize.FormatFloat("#,###.", step.MinIncome), humanize.FormatFloat("#,###.", step.MaxIncome))
 		}
 	}
 
