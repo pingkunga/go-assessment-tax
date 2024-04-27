@@ -49,10 +49,23 @@ func (h *DeductionService) SetPersonalDeduction(request DebuctionRequest) (Perso
 
 }
 
-func (h *DeductionService) SetKPlustDeduction(request DebuctionRequest) (KReceiptResponse, error) {
-	err := h.repo.SetDeductionConfig(kReceipt, request.Amount)
+func (h *DeductionService) SetKReceiptDeduction(request DebuctionRequest) (KReceiptResponse, error) {
+	DeductionConfig, err := h.repo.DeductionConfigByType(kReceipt)
 	if err != nil {
-		return KReceiptResponse{}, err
+		return KReceiptResponse{}, errors.New("k-receipt deduction not found")
+	}
+
+	if request.Amount < DeductionConfig.DeductionMin {
+		return KReceiptResponse{}, fmt.Errorf("k-receipt deduction must be greater than %s", humanize.FormatFloat("#,###.##", DeductionConfig.DeductionMin))
+	}
+
+	if request.Amount > DeductionConfig.DeductionMax {
+		return KReceiptResponse{}, fmt.Errorf("k-receipt deduction must be less than %s", humanize.FormatFloat("#,###.##", DeductionConfig.DeductionMax))
+	}
+
+	errSet := h.repo.SetDeductionConfig(kReceipt, request.Amount)
+	if errSet != nil {
+		return KReceiptResponse{}, errSet
 	}
 
 	return KReceiptResponse{KReceipt: request.Amount}, nil

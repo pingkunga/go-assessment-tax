@@ -57,6 +57,7 @@ func main() {
 
 	authoriedRoute.GET("/deductions", deductionHandler.DeductionConfigsHandler)
 	authoriedRoute.POST("/deductions/personal", deductionHandler.SetPersonalDeductionHandler)
+	authoriedRoute.POST("/deductions/k-receipt", deductionHandler.SetKReceiptDeductionHandler)
 
 	/*
 		shutdown := make(chan os.Signal, 1)

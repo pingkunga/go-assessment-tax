@@ -337,7 +337,7 @@ func (s *StubDeductionService) SetPersonalDeduction(request deductions.Debuction
 	return deductions.PersonalDeductionResponse{PersonalDeduction: request.Amount}, nil
 }
 
-func (s *StubDeductionService) SetKPlustDeduction(request deductions.DebuctionRequest) (deductions.KReceiptResponse, error) {
+func (s *StubDeductionService) SetKReceiptDeduction(request deductions.DebuctionRequest) (deductions.KReceiptResponse, error) {
 	return deductions.KReceiptResponse{KReceipt: request.Amount}, nil
 }
 

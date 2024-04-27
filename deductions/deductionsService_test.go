@@ -116,6 +116,142 @@ func TestDeductionsService_SetPersonalDeduction(t *testing.T) {
 	})
 }
 
+func TestDeductionsService_SetKReceiptDeduction(t *testing.T) {
+
+	t.Run("given k-receipt dection 70000 but min 0 / max 100,000, should return success", func(t *testing.T) {
+		// Create a new StubRepository
+		repo := &StubRepository{
+			GetDeductionStub: 70000,
+			DeductionConfigStub: repo.DeductionConfig{
+				DeductionType: "k-receipt",
+				DeductionMin:  0,
+				DeductionMax:  100000,
+			},
+		}
+
+		// Create a new DeductionsService
+		service := NewService(repo)
+
+		// Create a new DeductionRequest
+		request := DebuctionRequest{
+			Amount: 70000,
+		}
+
+		// Call the SetKReceiptDeduction method
+		response, err := service.SetKReceiptDeduction(request)
+
+		assert.NoError(t, err)
+		assert.EqualValues(t, 70000, response.KReceipt)
+
+	})
+
+	t.Run("given k-receipt dection 0 but min 0 / max 100,000, should return success", func(t *testing.T) {
+		// Create a new StubRepository
+		repo := &StubRepository{
+			GetDeductionStub: 0,
+			DeductionConfigStub: repo.DeductionConfig{
+				DeductionType: "k-receipt",
+				DeductionMin:  0,
+				DeductionMax:  100000,
+			},
+		}
+
+		// Create a new DeductionsService
+		service := NewService(repo)
+
+		// Create a new DeductionRequest
+		request := DebuctionRequest{
+			Amount: 0,
+		}
+
+		// Call the SetKReceiptDeduction method
+		response, err := service.SetKReceiptDeduction(request)
+
+		assert.NoError(t, err)
+		assert.EqualValues(t, 0, response.KReceipt)
+	})
+
+	t.Run("given k-receipt dection 100,000 but min 0 / max 100,000, should return success", func(t *testing.T) {
+		// Create a new StubRepository
+		repo := &StubRepository{
+			GetDeductionStub: 100000,
+			DeductionConfigStub: repo.DeductionConfig{
+				DeductionType: "k-receipt",
+				DeductionMin:  0,
+				DeductionMax:  100000,
+			},
+		}
+
+		// Create a new DeductionsService
+		service := NewService(repo)
+
+		// Create a new DeductionRequest
+		request := DebuctionRequest{
+			Amount: 100000,
+		}
+
+		// Call the SetKReceiptDeduction method
+		response, err := service.SetKReceiptDeduction(request)
+
+		assert.NoError(t, err)
+		assert.EqualValues(t, 100000, response.KReceipt)
+	})
+
+	t.Run("given k-receipt dection 100,001 but min 0 / max 100,000, should return error", func(t *testing.T) {
+		// Create a new StubRepository
+		repo := &StubRepository{
+			GetDeductionStub: 100001,
+			DeductionConfigStub: repo.DeductionConfig{
+				DeductionType: "k-receipt",
+				DeductionMin:  0,
+				DeductionMax:  100000,
+			},
+		}
+
+		// Create a new DeductionsService
+		service := NewService(repo)
+
+		// Create a new DeductionRequest
+		request := DebuctionRequest{
+			Amount: 100001,
+		}
+
+		// Call the SetKReceiptDeduction method
+		response, err := service.SetKReceiptDeduction(request)
+
+		assert.Error(t, err)
+		assert.EqualValues(t, "k-receipt deduction must be less than 100,000.00", err.Error())
+		assert.EqualValues(t, 0, response.KReceipt)
+	})
+
+	t.Run("given k-receipt dection 100,001 but min 0 / max 100,000, should return error", func(t *testing.T) {
+		// Create a new StubRepository
+		repo := &StubRepository{
+			GetDeductionStub: 100001,
+			DeductionConfigStub: repo.DeductionConfig{
+				DeductionType: "k-receipt",
+				DeductionMin:  0,
+				DeductionMax:  100000,
+			},
+		}
+
+		// Create a new DeductionsService
+		service := NewService(repo)
+
+		// Create a new DeductionRequest
+		request := DebuctionRequest{
+			Amount: 100001,
+		}
+
+		// Call the SetKReceiptDeduction method
+		response, err := service.SetKReceiptDeduction(request)
+
+		assert.Error(t, err)
+		assert.EqualValues(t, "k-receipt deduction must be less than 100,000.00", err.Error())
+		assert.EqualValues(t, 0, response.KReceipt)
+	})
+}
+
 func TestDeductionsService_GetDeductionConfigs(t *testing.T) {
 	t.Run("given no deduction config, should return error", func(t *testing.T) {
 		// Create a new StubRepository

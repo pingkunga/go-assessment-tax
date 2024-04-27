@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pingkunga/assessment-tax/common"
 )
 
 type TaxHandler struct {
@@ -27,7 +28,7 @@ func (h *TaxHandler) CalculationsHandler(c echo.Context) error {
 
 	err := ValidateTaxRequest(taxRequest)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, fmt.Sprintf("ValidateError: %v", err.Error()))
+		return c.JSON(http.StatusBadRequest, common.Err{Message: "Validate Err:" + err.Error()})
 	}
 
 	TaxResponse := h.service.CalculateTax(taxRequest)
@@ -35,11 +36,6 @@ func (h *TaxHandler) CalculationsHandler(c echo.Context) error {
 }
 
 func (h *TaxHandler) BatchCalculationsHandler(c echo.Context) error {
-	// Multipart form
-	//-----------
-	// Read file
-	//-----------
-
 	// Source
 	file, err := c.FormFile("taxFile")
 	if err != nil {
@@ -74,13 +70,13 @@ func (h *TaxHandler) BatchCalculationsHandler(c echo.Context) error {
 	//Clear file
 	_ = os.Remove(filepath.Join("Uploads", file.Filename))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, fmt.Sprintf("ImportError: %v", err.Error()))
+		return c.JSON(http.StatusBadRequest, common.Err{Message: "ImportError:" + err.Error()})
 	}
 
 	//Calculate
 	taxBatchsResponse, err := h.service.CalculateTaxBatch(taxRequests)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, fmt.Sprintf("CalculateError: %v", err.Error()))
+		return c.JSON(http.StatusBadRequest, common.Err{Message: "CalculateError:" + err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, taxBatchsResponse)
