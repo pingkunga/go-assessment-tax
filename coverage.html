@@ -1,0 +1,647 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>deductions: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/pingkunga/assessment-tax/deductions/deductionsHandler.go (84.2%)</option>
+				
+				<option value="file1">github.com/pingkunga/assessment-tax/deductions/deductionsService.go (71.0%)</option>
+				
+				<option value="file2">github.com/pingkunga/assessment-tax/tax/taxHandler.go (77.8%)</option>
+				
+				<option value="file3">github.com/pingkunga/assessment-tax/tax/taxService.go (92.8%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package deductions
+
+import (
+        "net/http"
+
+        "github.com/labstack/echo/v4"
+        "github.com/pingkunga/assessment-tax/common"
+        repo "github.com/pingkunga/assessment-tax/postgres"
+)
+
+type DeductionHandler struct {
+        service IDeductionService
+}
+
+type IDeductionService interface {
+        SetPersonalDeduction(request DebuctionRequest) (PersonalDeductionResponse, error)
+        SetKReceiptDeduction(request DebuctionRequest) (KReceiptResponse, error)
+        GetPersonalDeduction() (PersonalDeductionResponse, error)
+        DeductionConfigs() ([]repo.DeductionConfig, error)
+}
+
+func NewHandler(service IDeductionService) *DeductionHandler <span class="cov8" title="1">{
+        return &amp;DeductionHandler{service: service}
+}</span>
+
+func (h *DeductionHandler) SetPersonalDeductionHandler(c echo.Context) error <span class="cov8" title="1">{
+
+        var debuctionRequest DebuctionRequest
+        if err := c.Bind(&amp;debuctionRequest); err != nil </span><span class="cov0" title="0">{
+                return c.JSON(http.StatusBadRequest, err)
+        }</span>
+
+        <span class="cov8" title="1">deductionsResponse, error := h.service.SetPersonalDeduction(debuctionRequest)
+        if error != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusBadRequest, common.Err{Message: error.Error()})
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, deductionsResponse)</span>
+}
+
+func (h *DeductionHandler) SetKReceiptDeductionHandler(c echo.Context) error <span class="cov8" title="1">{
+
+        var debuctionRequest DebuctionRequest
+        if err := c.Bind(&amp;debuctionRequest); err != nil </span><span class="cov0" title="0">{
+                return c.JSON(http.StatusBadRequest, err)
+        }</span>
+
+        <span class="cov8" title="1">deductionsResponse, error := h.service.SetKReceiptDeduction(debuctionRequest)
+        if error != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusBadRequest, common.Err{Message: error.Error()})
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, deductionsResponse)</span>
+}
+
+func (h *DeductionHandler) DeductionConfigsHandler(c echo.Context) error <span class="cov8" title="1">{
+
+        deduction, error := h.service.DeductionConfigs()
+        if error != nil </span><span class="cov0" title="0">{
+                return c.JSON(http.StatusBadRequest, common.Err{Message: error.Error()})
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, deduction)</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package deductions
+
+import (
+        "errors"
+        "fmt"
+
+        "github.com/dustin/go-humanize"
+        repo "github.com/pingkunga/assessment-tax/postgres"
+)
+
+type DeductionService struct {
+        repo DeductionRepository
+}
+
+type DeductionRepository interface {
+        GetDeductionConfig(pKey string) (float64, error)
+        SetDeductionConfig(pKey string, newValue float64) error
+        DeductionConfigs() ([]repo.DeductionConfig, error)
+        DeductionConfigByType(deductionType string) (repo.DeductionConfig, error)
+}
+
+func NewService(repo DeductionRepository) *DeductionService <span class="cov8" title="1">{
+        return &amp;DeductionService{repo: repo}
+}</span>
+
+const personalDeduction = "personal"
+const kReceipt = "k-receipt"
+
+func (h *DeductionService) SetPersonalDeduction(request DebuctionRequest) (PersonalDeductionResponse, error) <span class="cov8" title="1">{
+        DeductionConfig, err := h.repo.DeductionConfigByType(personalDeduction)
+        if err != nil </span><span class="cov0" title="0">{
+                return PersonalDeductionResponse{}, errors.New("personal deduction not found")
+        }</span>
+
+        <span class="cov8" title="1">if request.Amount &lt; DeductionConfig.DeductionMin </span><span class="cov8" title="1">{
+                return PersonalDeductionResponse{}, fmt.Errorf("personal deduction must be greater than %s", humanize.FormatFloat("#,###.##", DeductionConfig.DeductionMin))
+        }</span>
+
+        <span class="cov8" title="1">if request.Amount &gt; DeductionConfig.DeductionMax </span><span class="cov8" title="1">{
+                return PersonalDeductionResponse{}, fmt.Errorf("personal deduction must be less than %s", humanize.FormatFloat("#,###.##", DeductionConfig.DeductionMax))
+        }</span>
+
+        <span class="cov8" title="1">errSet := h.repo.SetDeductionConfig(personalDeduction, request.Amount)
+        if errSet != nil </span><span class="cov0" title="0">{
+                return PersonalDeductionResponse{}, errSet
+        }</span>
+
+        <span class="cov8" title="1">return PersonalDeductionResponse{PersonalDeduction: request.Amount}, nil</span>
+
+}
+
+func (h *DeductionService) SetKReceiptDeduction(request DebuctionRequest) (KReceiptResponse, error) <span class="cov8" title="1">{
+        DeductionConfig, err := h.repo.DeductionConfigByType(kReceipt)
+        if err != nil </span><span class="cov0" title="0">{
+                return KReceiptResponse{}, errors.New("k-receipt deduction not found")
+        }</span>
+
+        <span class="cov8" title="1">if request.Amount &lt; DeductionConfig.DeductionMin </span><span class="cov0" title="0">{
+                return KReceiptResponse{}, fmt.Errorf("k-receipt deduction must be greater than %s", humanize.FormatFloat("#,###.##", DeductionConfig.DeductionMin))
+        }</span>
+
+        <span class="cov8" title="1">if request.Amount &gt; DeductionConfig.DeductionMax </span><span class="cov8" title="1">{
+                return KReceiptResponse{}, fmt.Errorf("k-receipt deduction must be less than %s", humanize.FormatFloat("#,###.##", DeductionConfig.DeductionMax))
+        }</span>
+
+        <span class="cov8" title="1">errSet := h.repo.SetDeductionConfig(kReceipt, request.Amount)
+        if errSet != nil </span><span class="cov0" title="0">{
+                return KReceiptResponse{}, errSet
+        }</span>
+
+        <span class="cov8" title="1">return KReceiptResponse{KReceipt: request.Amount}, nil</span>
+
+}
+
+func (h *DeductionService) GetPersonalDeduction() (PersonalDeductionResponse, error) <span class="cov0" title="0">{
+        DeductionConfig, err := h.repo.DeductionConfigByType(personalDeduction)
+        if err != nil </span><span class="cov0" title="0">{
+                return PersonalDeductionResponse{}, errors.New("personal deduction not found")
+        }</span>
+
+        <span class="cov0" title="0">return PersonalDeductionResponse{PersonalDeduction: DeductionConfig.DeductionAmount}, nil</span>
+}
+
+func (h *DeductionService) DeductionConfigs() ([]repo.DeductionConfig, error) <span class="cov8" title="1">{
+        deductions, err := h.repo.DeductionConfigs()
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return deductions, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package tax
+
+import (
+        "fmt"
+        "io"
+        "net/http"
+        "os"
+        "path/filepath"
+        "time"
+
+        "github.com/labstack/echo/v4"
+        "github.com/pingkunga/assessment-tax/common"
+)
+
+type TaxHandler struct {
+        service *TaxService
+}
+
+func NewHandler(service *TaxService) *TaxHandler <span class="cov8" title="1">{
+        return &amp;TaxHandler{service: service}
+}</span>
+
+func (h *TaxHandler) CalculationsHandler(c echo.Context) error <span class="cov8" title="1">{
+        var taxRequest TaxRequest
+        if err := c.Bind(&amp;taxRequest); err != nil </span><span class="cov0" title="0">{
+                return c.JSON(http.StatusBadRequest, err)
+        }</span>
+
+        <span class="cov8" title="1">err := ValidateTaxRequest(taxRequest)
+        if err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusBadRequest, common.Err{Message: "Validate Err:" + err.Error()})
+        }</span>
+
+        <span class="cov8" title="1">TaxResponse := h.service.CalculateTax(taxRequest)
+        return c.JSON(http.StatusOK, TaxResponse)</span>
+}
+
+func (h *TaxHandler) BatchCalculationsHandler(c echo.Context) error <span class="cov8" title="1">{
+        // Source
+        file, err := c.FormFile("taxFile")
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        //https://stackoverflow.com/questions/48349927/how-to-write-a-directory-with-a-file-in-golang
+        <span class="cov8" title="1">src, err := file.Open()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">defer src.Close()
+
+        // Destination
+        //taxes.csv
+        CheckBatchTxPath("Uploads")
+        file.Filename = generateFileName(file.Filename)
+        dst, err := os.Create(filepath.Join("Uploads", file.Filename))
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">defer dst.Close()
+
+        // Copy
+        if _, err = io.Copy(dst, src); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        //Process
+        <span class="cov8" title="1">taxRequests, err := ImportTaxCSV(filepath.Join("Uploads", file.Filename))
+
+        //Clear file
+        _ = os.Remove(filepath.Join("Uploads", file.Filename))
+        if err != nil </span><span class="cov0" title="0">{
+                return c.JSON(http.StatusBadRequest, common.Err{Message: "ImportError:" + err.Error()})
+        }</span>
+
+        //Calculate
+        <span class="cov8" title="1">taxBatchsResponse, err := h.service.CalculateTaxBatch(taxRequests)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.JSON(http.StatusBadRequest, common.Err{Message: "CalculateError:" + err.Error()})
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, taxBatchsResponse)</span>
+}
+
+func CheckBatchTxPath(p string) <span class="cov8" title="1">{
+        if _, err := os.Stat(p); os.IsNotExist(err) </span><span class="cov0" title="0">{
+                os.Mkdir(p, 0770)
+        }</span>
+}
+
+func fileNameWithoutExt(fileName string) string <span class="cov8" title="1">{
+        return fileName[:len(fileName)-len(filepath.Ext(fileName))]
+}</span>
+
+func generateFileName(fileName string) string <span class="cov8" title="1">{
+        return fmt.Sprintf("%s-%d%s", fileNameWithoutExt(fileName), time.Now().Unix(), filepath.Ext(fileName))
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package tax
+
+import (
+        "encoding/csv"
+        "errors"
+        "fmt"
+        "log"
+        "os"
+        "strconv"
+        "strings"
+
+        "github.com/dustin/go-humanize"
+        deductions "github.com/pingkunga/assessment-tax/deductions"
+)
+
+type TaxService struct {
+        deductsvc deductions.IDeductionService
+}
+
+func NewService(debuctionSVC deductions.IDeductionService) *TaxService <span class="cov8" title="1">{
+        return &amp;TaxService{deductsvc: debuctionSVC}
+}</span>
+
+func (s *TaxService) CalculateTax(tax TaxRequest) TaxResponse <span class="cov8" title="1">{
+
+        netIncome := s.calculateNetIncome(tax)
+
+        var taxAmount float64
+        var taxLevels []TaxLevel
+        for _, step := range TaxStepList() </span><span class="cov8" title="1">{
+                stepTaxAmount := 0.0
+                if netIncome &lt;= 0 </span><span class="cov8" title="1">{
+                        stepTaxAmount = 0
+                }</span> else<span class="cov8" title="1"> if netIncome &gt; step.MaxIncome </span><span class="cov8" title="1">{
+                        stepTaxAmount = (step.MaxIncome * step.TaxRate)
+                        netIncome = netIncome - step.MaxIncome
+                }</span> else<span class="cov8" title="1"> {
+                        stepTaxAmount = (netIncome * step.TaxRate)
+                        netIncome = netIncome - step.MaxIncome
+                }</span>
+
+                <span class="cov8" title="1">taxLevels = append(taxLevels, TaxLevel{Level: step.FriendlyMessage, Tax: stepTaxAmount})
+                taxAmount = taxAmount + stepTaxAmount</span>
+        }
+
+        <span class="cov8" title="1">taxAmount = taxAmount - tax.WHT
+
+        if taxAmount &lt; 0 </span><span class="cov8" title="1">{
+                return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1, TaxLevels: taxLevels}
+        }</span>
+        <span class="cov8" title="1">return TaxResponse{Tax: taxAmount, TaxRefund: 0, TaxLevels: taxLevels}</span>
+}
+
+func (s *TaxService) calculateNetIncome(tax TaxRequest) float64 <span class="cov8" title="1">{
+        netIncome := tax.TotalIncome - s.PersonalDeduction()
+
+        for _, allowance := range tax.Allowances </span><span class="cov8" title="1">{
+                netIncome = netIncome - allowanceAmountGuard(allowance)
+        }</span>
+
+        <span class="cov8" title="1">return netIncome</span>
+}
+
+func allowanceAmountGuard(allowance Allowance) float64 <span class="cov8" title="1">{
+
+        if allowance.AllowanceType == DEDUCTION_DONATION &amp;&amp; allowance.Amount &gt; DEDUCTION_DONATION_MAX </span><span class="cov8" title="1">{
+                return DEDUCTION_DONATION_MAX
+        }</span>
+        <span class="cov8" title="1">return allowance.Amount</span>
+}
+
+const DEDUCTION_DONATION = "donation"
+const DEDUCTION_DONATION_MAX = 100000
+
+const DEDUCTION_K_RECEIPT = "k-receipt"
+
+var ErrTotalIncomeLessThanZero = errors.New("TotalIncome is less than 0")
+var ErrWHTLessThanZero = errors.New("WHT is less than 0")
+var ErrWHTMoreThanTotalIncome = errors.New("WHT is more than TotalIncome")
+var ErrAllowanceAmountLessThanZero = errors.New("Allowance amount is less than 0")
+var ErrNotSupportAllowanceType = errors.New("Allowance type support: donation, k-receipt")
+
+func ValidateTaxRequest(tax TaxRequest) (err error) <span class="cov8" title="1">{
+        if tax.TotalIncome &lt; 0 </span><span class="cov8" title="1">{
+                err = errors.Join(err, ErrTotalIncomeLessThanZero)
+        }</span>
+
+        <span class="cov8" title="1">if tax.WHT &lt; 0 </span><span class="cov8" title="1">{
+                err = errors.Join(err, ErrWHTLessThanZero)
+        }</span>
+
+        <span class="cov8" title="1">if tax.TotalIncome &lt; tax.WHT </span><span class="cov8" title="1">{
+                err = errors.Join(err, ErrWHTMoreThanTotalIncome)
+        }</span>
+
+        <span class="cov8" title="1">for _, allowance := range tax.Allowances </span><span class="cov8" title="1">{
+
+                if allowance.AllowanceType != DEDUCTION_DONATION &amp;&amp; allowance.AllowanceType != DEDUCTION_K_RECEIPT </span><span class="cov8" title="1">{
+                        err = errors.Join(err, ErrNotSupportAllowanceType)
+                }</span>
+
+                <span class="cov8" title="1">if allowance.Amount &lt; 0 </span><span class="cov8" title="1">{
+                        err = errors.Join(err, ErrAllowanceAmountLessThanZero)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return</span>
+}
+
+func (s *TaxService) PersonalDeduction() float64 <span class="cov8" title="1">{
+        //return 60000
+
+        //Get Personal Deduction from Deduction Service
+        personalDeduction, err := s.deductsvc.GetPersonalDeduction()
+        if err != nil </span><span class="cov0" title="0">{
+                return 60000
+        }</span>
+        <span class="cov8" title="1">return personalDeduction.PersonalDeduction</span>
+}
+
+/*
+การคำนวนภาษีตามขั้นบันใด
+รายได้ 0 - 150,000 ได้รับการยกเว้น
+150,001 - 500,000 อัตราภาษี 10%
+500,001 - 1,000,000 อัตราภาษี 15%
+1,000,001 - 2,000,000 อัตราภาษี 20%
+มากกว่า 2,000,000 อัตราภาษี 35%
+*/
+func TaxStepList() []TaxStep <span class="cov8" title="1">{
+        taxStep := []TaxStep{
+                {seq: 1, MinIncome: 0, MaxIncome: 150000, TaxRate: 0},
+                {seq: 2, MinIncome: 150001, MaxIncome: 500000, TaxRate: 0.1},
+                {seq: 3, MinIncome: 500001, MaxIncome: 1000000, TaxRate: 0.15},
+                {seq: 4, MinIncome: 1000001, MaxIncome: 2000000, TaxRate: 0.2},
+                {seq: 5, MinIncome: 2000001, MaxIncome: 999999999, TaxRate: 0.35},
+        }
+
+        //Update FriendlyMessage
+        for i, step := range taxStep </span><span class="cov8" title="1">{
+                if taxStep[i].MaxIncome == 999999999 </span><span class="cov8" title="1">{
+                        taxStep[i].FriendlyMessage = fmt.Sprintf("%s ขึ้นไป", humanize.FormatFloat("#,###.", step.MinIncome))
+                }</span> else<span class="cov8" title="1"> {
+                        taxStep[i].FriendlyMessage = fmt.Sprintf("%s-%s", humanize.FormatFloat("#,###.", step.MinIncome), humanize.FormatFloat("#,###.", step.MaxIncome))
+                }</span>
+        }
+
+        <span class="cov8" title="1">return taxStep</span>
+}
+
+func (s *TaxService) CalculateTaxBatch(taxs []TaxRequest) (TaxBatchsResponse, error) <span class="cov8" title="1">{
+        var taxBatchs []TaxBatchResponse
+        for _, tax := range taxs </span><span class="cov8" title="1">{
+                taxResponse := s.CalculateTax(tax)
+                taxBatchs = append(taxBatchs, TaxBatchResponse{TotalIncome: tax.TotalIncome, Tax: taxResponse.Tax, TaxRefund: taxResponse.TaxRefund})
+        }</span>
+        <span class="cov8" title="1">return TaxBatchsResponse{Taxes: taxBatchs}, nil</span>
+}
+
+func ImportTaxCSV(pathToFile string) (taxls []TaxRequest, errTax error) <span class="cov8" title="1">{
+
+        if _, err := os.Stat(pathToFile); err != nil </span><span class="cov8" title="1">{
+                return nil, errors.Join(errTax, fmt.Errorf("error Open CSV file at: %s", pathToFile))
+        }</span>
+
+        <span class="cov8" title="1">csvFile, err := os.Open(pathToFile)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+        <span class="cov8" title="1">defer csvFile.Close()
+
+        //parse csv file
+        reader := csv.NewReader(csvFile)
+        reader.FieldsPerRecord = -1
+
+        csvData, err := reader.ReadAll()
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+                return nil, errors.Join(errTax, fmt.Errorf("error read CSV file at: %s", pathToFile))
+        }</span>
+
+        //loop through each row
+        <span class="cov8" title="1">var taxRequests []TaxRequest
+        var header []string
+        for i, row := range csvData </span><span class="cov8" title="1">{
+                if i == 0 </span><span class="cov8" title="1">{
+                        header = row
+                        errHead := ValidateHeader(header)
+                        errTax = concatenateError(errTax, errHead)
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">totalIncome, err := ParseFloatForImport(header[0], row[0], i)
+                errTax = concatenateError(errTax, err)
+
+                wht, err := ParseFloatForImport(header[1], row[1], i)
+                errTax = concatenateError(errTax, err)
+
+                allowances, err := createAllowances(header, row, i)
+                errTax = concatenateError(errTax, err)
+
+                //Add Result
+                if errTax == nil </span><span class="cov8" title="1">{
+                        TaxRequest := TaxRequest{
+                                TotalIncome: totalIncome,
+                                WHT:         wht,
+                                Allowances:  allowances,
+                        }
+                        taxRequests = append(taxRequests, TaxRequest)
+                }</span>
+        }
+
+        <span class="cov8" title="1">if errTax != nil </span><span class="cov8" title="1">{
+                return nil, errTax
+        }</span>
+
+        //validate each row
+        <span class="cov8" title="1">return taxRequests, nil</span>
+}
+
+func concatenateError(err error, err2 error) error <span class="cov8" title="1">{
+        if err != nil </span><span class="cov8" title="1">{
+                return errors.Join(err, err2)
+        }</span>
+        <span class="cov8" title="1">return err2</span>
+}
+
+func createAllowances(heading []string, row []string, rowId int) (allowances []Allowance, err error) <span class="cov8" title="1">{
+
+        //donation
+        allowanceDonation, err := createAllowance(DEDUCTION_DONATION, heading[2], row[2], rowId)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">allowances = append(allowances, allowanceDonation)
+        //k-receipt
+        // allowanceKReceipt, err := createAllowance(DEDUCTION_K_RECEIPT, row[3], rowId)
+        // if err != nil {
+        //         return nil, err
+        // }
+        // allowances = append(allowances, allowanceKReceipt)
+
+        return allowances, nil</span>
+}
+
+func createAllowance(pHead string, pType string, pValue string, rowId int) (allowance Allowance, err error) <span class="cov8" title="1">{
+        allowanceType := pType
+        allowanceAmount, err := ParseFloatForImport(pHead, strings.TrimSpace(pValue), rowId)
+        allowance = Allowance{AllowanceType: allowanceType, Amount: allowanceAmount}
+        return allowance, err
+}</span>
+
+func ValidateHeader(header []string) (err error) <span class="cov8" title="1">{
+        //totalIncome,wht,donation,k-receipt
+        if len(header) != 3 </span><span class="cov0" title="0">{
+                err = errors.Join(err, errors.New("invalid header count"))
+        }</span>
+        <span class="cov8" title="1">if strings.TrimSpace(header[0]) != "totalIncome" </span><span class="cov0" title="0">{
+                err = errors.Join(err, errors.New("invalid header totalIncome"))
+        }</span>
+        <span class="cov8" title="1">if strings.TrimSpace(header[1]) != "wht" </span><span class="cov0" title="0">{
+                err = errors.Join(err, errors.New("invalid header wht"))
+        }</span>
+        <span class="cov8" title="1">if strings.TrimSpace(header[2]) != "donation" </span><span class="cov8" title="1">{
+                err = errors.Join(err, errors.New("invalid header donation"))
+        }</span>
+        // if strings.TrimSpace(header[3]) != "k-receipt" {
+        //         err = errors.Join(err, errors.New("Invalid header k-receipt"))
+        // }
+
+        <span class="cov8" title="1">return</span>
+}
+
+func ParseFloatForImport(pFieldName string, pValue string, rowId int) (floatValue float64, err error) <span class="cov8" title="1">{
+        floatResult, errCast := strconv.ParseFloat(strings.TrimSpace(pValue), 64)
+        if errCast != nil </span><span class="cov8" title="1">{
+                return 0.0, errors.Join(err, fmt.Errorf("error parse %s at row %d", pFieldName, rowId))
+        }</span>
+        <span class="cov8" title="1">floatValue = floatResult
+        return floatValue, nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

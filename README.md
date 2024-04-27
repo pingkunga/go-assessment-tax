@@ -15,12 +15,12 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 - [x] ผู้ใช้งาน สามารถส่งข้อมูลเพื่อคำนวนภาษีได้
 - [x] ผู้ใช้งาน แสดงภาษีที่ต้องจ่ายหรือได้รับในปีนั้น ๆ ได้
 - [x] การคำนวนภาษีคำนวนจาก เงินหัก ณ ที่จ่าย / ค่าลดหย่อนส่วนตัว/ขั้นบันใดภาษี/เงินบริจาค
-- [ ] การคำนวนภาษีตามขั้นบันใด
+- [x] การคำนวนภาษีตามขั้นบันใด
   - [x] รายได้ 0 - 150,000 ได้รับการยกเว้น
   - [x] 150,001 - 500,000 อัตราภาษี 10%
   - [x] 500,001 - 1,000,000 อัตราภาษี 15%
   - [x] 1,000,001 - 2,000,000 อัตราภาษี 20%
-  - [ ] มากกว่า 2,000,000 อัตราภาษี 35%
+  - [x] มากกว่า 2,000,000 อัตราภาษี 35%
 - [x] เงินบริจาคสามารถหย่อนได้สูงสุด 100,000 บาท
 - [x] ค่าลดหย่อนส่วนตัวมีค่าเริ่มต้นที่ 60,000 บาท -- Initial จาก DB
 - [x] k-receipt โครงการช้อปลดภาษี ซึ่งสามารถลดหย่อนได้สูงสุด 50,000 บาทเป็นค่าเริ่มต้น Set init.sql
@@ -31,8 +31,14 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 - [x] ในกรณีที่รายรับ รวมหักค่าลดหย่อน พร้อมทั้ง wht พบว่าต้องได้เงินคืน จะต้องคำนวนเงินที่ต้องได้รับคืนใน field ใหม่ ที่ชื่อว่า taxRefund
 
 ## Non-Functional Requirement
-- [ ] มี `Unit Test` ครอบคลุม
-- [ ] ใช้ `go module`
+- [x] มี `Unit Test` ครอบคลุม 89.1%
+
+```
+go test -v ./... -cover -coverprofile="c.out"
+go tool cover -html="c.out" -o "coverage.html" 
+```
+
+- [x] ใช้ `go module`
 - [x] ใช้ go module `go mod init github.com/<your github name>/assessment-tax`
 - [x] ใช้ go 1.21 or above
 - [x] ใช้ `PostgreSQL`
@@ -40,19 +46,24 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 - [x] database url _MUST_ get from environment variable name `DATABASE_URL`
   - ตัวอย่าง `DATABASE_URL=host={REPLACE_ME} port=5432 user={REPLACE_ME} password={REPLACE_ME} dbname={REPLACE_ME} sslmode=disable`
 - [x] ใช้ `docker compose` สำหรับต่อ Database
-- [ ] API support `Graceful Shutdown`
+- [x] API support `Graceful Shutdown`
   - เช่น ถ้ามีการกด `Ctrl + C` จะ print `shutting down the server`
 - [x] มี Dockerfile สำหรับ build image และเป็น `Multi-stage build`
 
 ```
 docker build  -t gotax:1.0.0 .
 
+docker build  -t gotax:1.0.0 --progress plain --no-cache --target run-test-stage .
+
+docker build  -t gotax:1.0.0 --progress plain --no-cache --target run-sec-stage .
+
+
 $env:PORT="8080"
 $env:ADMIN_USERNAME="adminTax"
 $env:ADMIN_PASSWORD="admin!"
 $env:DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable"
 
-docker run -p 8080:8080 -e DATABASE_URL="host=192.168.0.72 port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" -e ADMIN_USERNAME="adminTax" -e ADMIN_PASSWORD="admin!" gotax:1.0.0
+docker run -p 8080:8080 -e DATABASE_URL="host=192.168.1.101 port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" -e ADMIN_USERNAME="adminTax" -e ADMIN_PASSWORD="admin!" gotax:1.0.3
 
 ```
 
@@ -60,7 +71,14 @@ docker run -p 8080:8080 -e DATABASE_URL="host=192.168.0.72 port=5432 user=postgr
 
 https://stackoverflow.com/questions/3290182/which-status-code-should-i-use-for-failed-validations-or-invalid-duplicates
 
-- [ ] ใช้ `gofmt` และ `go vet`
+- [x] ใช้ `gofmt` และ `go vet`
+
+```
+ตอนกด save vs code มันแอบทำ gofmt ให้มั้ง
+
+go vet ยัดใน dockerfile
+```
+
 - [x] แยก Branch ของแต่ละ Story ออกจาก `main` และ Merge กลับไปยัง `main` Branch เสมอ
   - เช่น story ที่ 1 จะใช้ branch ชื่อ `feature/story-1` หรือ `feature/store-1-create-tax-calculation`
 - [x] admin กำหนด Basic authen ด้วย username: `adminTax`, password: `admin!`
