@@ -28,13 +28,22 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	//Declare Deduction Service
+	repo := postgres.NewRepository(db)
+	deductionService := deductions.NewService(repo)
+	deductionHandler := deductions.NewHandler(deductionService)
+
+	//Declare Tax Service
+	taxService := tax.NewService(deductionService)
+	taxHandler := tax.NewHandler(taxService)
+
 	e.GET("/hello-world", func(c echo.Context) error {
 		time.Sleep(5 * time.Second)
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
 	})
 
-	e.POST("/tax/calculations", tax.CalculationsHandler)
-	e.POST("/tax/calculations/upload-csv", tax.BatchCalculationsHandler)
+	e.POST("/tax/calculations", taxHandler.CalculationsHandler)
+	e.POST("/tax/calculations/upload-csv", taxHandler.BatchCalculationsHandler)
 	//Authorized
 	authoriedRoute := e.Group("/admin")
 
@@ -46,12 +55,8 @@ func main() {
 		return false, nil
 	}))
 
-	repo := postgres.NewRepository(db)
-	service := deductions.NewService(repo)
-	handler := deductions.NewHandler(service)
-
-	authoriedRoute.GET("/deductions", handler.DeductionConfigsHandler)
-	authoriedRoute.POST("/deductions/personal", handler.SetPersonalDeductionHandler)
+	authoriedRoute.GET("/deductions", deductionHandler.DeductionConfigsHandler)
+	authoriedRoute.POST("/deductions/personal", deductionHandler.SetPersonalDeductionHandler)
 
 	/*
 		shutdown := make(chan os.Signal, 1)

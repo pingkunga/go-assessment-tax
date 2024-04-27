@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	deductions "github.com/pingkunga/assessment-tax/deductions"
+	repo "github.com/pingkunga/assessment-tax/postgres"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +21,9 @@ func TestCalculateTax(t *testing.T) {
 				},
 			},
 		}
-		taxResponse := CalculateTax(tax)
+
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 29000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
@@ -31,7 +35,9 @@ func TestCalculateTax(t *testing.T) {
 			TotalIncome: 2000001.0,
 			WHT:         0.0,
 		}
-		taxResponse := CalculateTax(tax)
+
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 258000.2, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
@@ -48,7 +54,9 @@ func TestCalculateTax(t *testing.T) {
 				},
 			},
 		}
-		taxResponse := CalculateTax(tax)
+
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 4000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
@@ -67,7 +75,8 @@ func TestCalculateTax(t *testing.T) {
 			},
 		}
 
-		taxResponse := CalculateTax(tax)
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 19000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
@@ -86,7 +95,8 @@ func TestCalculateTax(t *testing.T) {
 			},
 		}
 
-		taxResponse := CalculateTax(tax)
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 0.0, taxResponse.Tax)
 		assert.EqualValues(t, 1000.0, taxResponse.TaxRefund)
@@ -238,4 +248,29 @@ func TestImportTaxCSV(t *testing.T) {
 		assert.Equal(t, "invalid header donation\nerror parse totalIncome at row 1\nerror parse totalIncome at row 2\nerror parse wht at row 3", err.Error())
 
 	})
+}
+
+func MockDeductuinService() deductions.IDeductionService {
+	return &StubDeductionService{PersonalDeduction: 60000.0}
+}
+
+// Mock Repository
+type StubDeductionService struct {
+	PersonalDeduction float64
+}
+
+func (s *StubDeductionService) GetPersonalDeduction() (deductions.PersonalDeductionResponse, error) {
+	return deductions.PersonalDeductionResponse{PersonalDeduction: s.PersonalDeduction}, nil
+}
+
+func (s *StubDeductionService) SetPersonalDeduction(request deductions.DebuctionRequest) (deductions.PersonalDeductionResponse, error) {
+	return deductions.PersonalDeductionResponse{PersonalDeduction: request.Amount}, nil
+}
+
+func (s *StubDeductionService) DeductionConfigs() ([]repo.DeductionConfig, error) {
+	return []repo.DeductionConfig{}, nil
+}
+
+func (s *StubDeductionService) DeductionConfigByType(deductionType string) (repo.DeductionConfig, error) {
+	return repo.DeductionConfig{}, nil
 }

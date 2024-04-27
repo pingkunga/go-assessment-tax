@@ -8,7 +8,7 @@ import (
 	repo "github.com/pingkunga/assessment-tax/postgres"
 )
 
-type Service struct {
+type DeductionService struct {
 	repo DeductionRepository
 }
 
@@ -19,14 +19,14 @@ type DeductionRepository interface {
 	DeductionConfigByType(deductionType string) (repo.DeductionConfig, error)
 }
 
-func NewService(repo DeductionRepository) *Service {
-	return &Service{repo: repo}
+func NewService(repo DeductionRepository) *DeductionService {
+	return &DeductionService{repo: repo}
 }
 
 const personalDeduction = "personal"
 const kReceipt = "k-receipt"
 
-func (h *Service) SetPersonalDeduction(request DebuctionRequest) (PersonalDeductionResponse, error) {
+func (h *DeductionService) SetPersonalDeduction(request DebuctionRequest) (PersonalDeductionResponse, error) {
 	DeductionConfig, err := h.repo.DeductionConfigByType(personalDeduction)
 	if err != nil {
 		return PersonalDeductionResponse{}, errors.New("personal deduction not found")
@@ -49,7 +49,7 @@ func (h *Service) SetPersonalDeduction(request DebuctionRequest) (PersonalDeduct
 
 }
 
-func (h *Service) SetKPlustDeduction(request DebuctionRequest) (KReceiptResponse, error) {
+func (h *DeductionService) SetKPlustDeduction(request DebuctionRequest) (KReceiptResponse, error) {
 	err := h.repo.SetDeductionConfig(kReceipt, request.Amount)
 	if err != nil {
 		return KReceiptResponse{}, err
@@ -59,7 +59,16 @@ func (h *Service) SetKPlustDeduction(request DebuctionRequest) (KReceiptResponse
 
 }
 
-func (h *Service) DeductionConfigs() ([]repo.DeductionConfig, error) {
+func (h *DeductionService) GetPersonalDeduction() (PersonalDeductionResponse, error) {
+	DeductionConfig, err := h.repo.DeductionConfigByType(personalDeduction)
+	if err != nil {
+		return PersonalDeductionResponse{}, errors.New("personal deduction not found")
+	}
+
+	return PersonalDeductionResponse{PersonalDeduction: DeductionConfig.DeductionAmount}, nil
+}
+
+func (h *DeductionService) DeductionConfigs() ([]repo.DeductionConfig, error) {
 	deductions, err := h.repo.DeductionConfigs()
 	if err != nil {
 		return nil, err

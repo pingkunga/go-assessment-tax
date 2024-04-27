@@ -11,7 +11,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func CalculationsHandler(c echo.Context) error {
+type TaxHandler struct {
+	service *TaxService
+}
+
+func NewHandler(service *TaxService) *TaxHandler {
+	return &TaxHandler{service: service}
+}
+
+func (h *TaxHandler) CalculationsHandler(c echo.Context) error {
 	var taxRequest TaxRequest
 	if err := c.Bind(&taxRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, err)
@@ -22,11 +30,11 @@ func CalculationsHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, fmt.Sprintf("ValidateError: %v", err.Error()))
 	}
 
-	TaxResponse := CalculateTax(taxRequest)
+	TaxResponse := h.service.CalculateTax(taxRequest)
 	return c.JSON(http.StatusOK, TaxResponse)
 }
 
-func BatchCalculationsHandler(c echo.Context) error {
+func (h *TaxHandler) BatchCalculationsHandler(c echo.Context) error {
 	// Multipart form
 	//-----------
 	// Read file
@@ -70,7 +78,7 @@ func BatchCalculationsHandler(c echo.Context) error {
 	}
 
 	//Calculate
-	taxBatchsResponse, err := CalculateTaxBatch(taxRequests)
+	taxBatchsResponse, err := h.service.CalculateTaxBatch(taxRequests)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, fmt.Sprintf("CalculateError: %v", err.Error()))
 	}

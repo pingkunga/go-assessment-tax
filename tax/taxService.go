@@ -10,11 +10,20 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	deductions "github.com/pingkunga/assessment-tax/deductions"
 )
 
-func CalculateTax(tax TaxRequest) TaxResponse {
+type TaxService struct {
+	deductsvc deductions.IDeductionService
+}
 
-	netIncome := calculateNetIncome(tax)
+func NewService(debuctionSVC deductions.IDeductionService) *TaxService {
+	return &TaxService{deductsvc: debuctionSVC}
+}
+
+func (s *TaxService) CalculateTax(tax TaxRequest) TaxResponse {
+
+	netIncome := s.calculateNetIncome(tax)
 
 	var taxAmount float64
 	var taxLevels []TaxLevel
@@ -42,8 +51,8 @@ func CalculateTax(tax TaxRequest) TaxResponse {
 	return TaxResponse{Tax: taxAmount, TaxRefund: 0, TaxLevels: taxLevels}
 }
 
-func calculateNetIncome(tax TaxRequest) float64 {
-	netIncome := tax.TotalIncome - PersonalDeduction()
+func (s *TaxService) calculateNetIncome(tax TaxRequest) float64 {
+	netIncome := tax.TotalIncome - s.PersonalDeduction()
 
 	for _, allowance := range tax.Allowances {
 		netIncome = netIncome - allowanceAmountGuard(allowance)
@@ -98,7 +107,7 @@ func ValidateTaxRequest(tax TaxRequest) (err error) {
 	return
 }
 
-func PersonalDeduction() float64 {
+func (s *TaxService) PersonalDeduction() float64 {
 	return 60000
 }
 
@@ -131,10 +140,10 @@ func TaxStepList() []TaxStep {
 	return taxStep
 }
 
-func CalculateTaxBatch(taxs []TaxRequest) (TaxBatchsResponse, error) {
+func (s *TaxService) CalculateTaxBatch(taxs []TaxRequest) (TaxBatchsResponse, error) {
 	var taxBatchs []TaxBatchResponse
 	for _, tax := range taxs {
-		taxResponse := CalculateTax(tax)
+		taxResponse := s.CalculateTax(tax)
 		taxBatchs = append(taxBatchs, TaxBatchResponse{TotalIncome: tax.TotalIncome, Tax: taxResponse.Tax, TaxRefund: taxResponse.TaxRefund})
 	}
 	return TaxBatchsResponse{Taxes: taxBatchs}, nil

@@ -5,23 +5,23 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/pingkunga/assessment-tax/common"
+	repo "github.com/pingkunga/assessment-tax/postgres"
 )
 
-// for implement interface
-type DeductionStorer interface {
-	getAllowanceConfig(pKey string) (float64, error)
-	setAllowanceConfig(pKey string, newValue float64) error
+type DeductionHandler struct {
+	service IDeductionService
 }
 
-type Handler struct {
-	service *Service
+type IDeductionService interface {
+	SetPersonalDeduction(request DebuctionRequest) (PersonalDeductionResponse, error)
+	DeductionConfigs() ([]repo.DeductionConfig, error)
 }
 
-func NewHandler(service *Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(service IDeductionService) *DeductionHandler {
+	return &DeductionHandler{service: service}
 }
 
-func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
+func (h *DeductionHandler) SetPersonalDeductionHandler(c echo.Context) error {
 
 	var debuctionRequest DebuctionRequest
 	if err := c.Bind(&debuctionRequest); err != nil {
@@ -36,7 +36,7 @@ func (h *Handler) SetPersonalDeductionHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, deductionsResponse)
 }
 
-func (h *Handler) DeductionConfigsHandler(c echo.Context) error {
+func (h *DeductionHandler) DeductionConfigsHandler(c echo.Context) error {
 
 	deduction, error := h.service.DeductionConfigs()
 	if error != nil {
