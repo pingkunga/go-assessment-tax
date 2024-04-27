@@ -139,3 +139,41 @@ func TestSetKReceiptDeductionHandler(t *testing.T) {
 		assert.EqualValues(t, "{\"message\":\"k-receipt deduction must be less than 100,000.00\"}\n", rec.Body.String())
 	})
 }
+
+func TestDeductionConfigsHandler(t *testing.T) {
+	t.Run("Given DeductionConfigsHandler in general case, Should Successfully with mock data 2 record", func(t *testing.T) {
+		e := echo.New()
+
+		req := httptest.NewRequest(http.MethodGet, "/deductions", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		// Create a new StubRepository
+		repo := &StubRepository{
+			GetDeductionStub: 100000,
+			DeductionConfigsStub: []repo.DeductionConfig{
+				{
+					DeductionType: "personal",
+					DeductionMin:  10000,
+					DeductionMax:  100000,
+				},
+				{
+					DeductionType: "k-receipt",
+					DeductionMin:  0,
+					DeductionMax:  100000,
+				},
+			},
+		}
+
+		// Create a new DeductionsService
+		service := NewService(repo)
+		handler := NewHandler(service)
+
+		err := handler.DeductionConfigsHandler(c)
+
+		assert.NoError(t, err)
+		assert.EqualValues(t, http.StatusOK, rec.Code)
+		assert.EqualValues(t, "[{\"id\":0,\"deductionType\":\"personal\",\"deductionAmount\":0,\"deductionMin\":10000,\"adeductionMax\":100000},{\"id\":0,\"deductionType\":\"k-receipt\",\"deductionAmount\":0,\"deductionMin\":0,\"adeductionMax\":100000}]\n", rec.Body.String())
+	})
+}
