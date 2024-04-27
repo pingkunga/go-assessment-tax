@@ -212,7 +212,9 @@ Content-Type: application/json
 Response body
 
 ```json
-"ValidateError: WHT is less than 0\nAllowance amount is less than 0"
+{
+  "message": "Validate Err:WHT is less than 0\nAllowance amount is less than 0"
+}
 ```
 
 ### Story: EXP05
