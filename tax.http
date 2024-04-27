@@ -344,3 +344,55 @@ full
   ]
 }
 ```
+
+### Story: EXP07
+### As user, I want to calculate my tax with tax level detail
+### ในฐานะผู้ใช้ ฉันต้องการคำนวนภาษีจาก ข้อมูลที่ส่งให้พร้อมค่าลดหย่อน พร้อมระบุรายละเอียดของขั้นบันใดภาษี
+
+POST {{HostAddress}}/tax/calculations
+Content-Type: application/json
+
+{
+  "totalIncome": 500000.0,
+  "wht": 0.0,
+  "allowances": [
+    {
+      "allowanceType": "k-receipt",
+      "amount": 50000.0
+    },
+    {
+      "allowanceType": "donation",
+      "amount": 100000.0
+    }
+  ]
+}
+
+Response body
+
+```json
+{
+  "tax": 14000.0,
+  "taxLevel": [
+    {
+      "level": "0-150,000",
+      "tax": 0.0
+    },
+    {
+      "level": "150,001-500,000",
+      "tax": 14000.0
+    },
+    {
+      "level": "500,001-1,000,000",
+      "tax": 0.0
+    },
+    {
+      "level": "1,000,001-2,000,000",
+      "tax": 0.0
+    },
+    {
+      "level": "2,000,001 ขึ้นไป",
+      "tax": 0.0
+    }
+  ]
+}
+```

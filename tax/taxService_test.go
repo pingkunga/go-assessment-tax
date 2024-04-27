@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	deductions "github.com/pingkunga/assessment-tax/deductions"
+	repo "github.com/pingkunga/assessment-tax/postgres"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +21,9 @@ func TestCalculateTax(t *testing.T) {
 				},
 			},
 		}
-		taxResponse := CalculateTax(tax)
+
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 29000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
@@ -31,7 +35,9 @@ func TestCalculateTax(t *testing.T) {
 			TotalIncome: 2000001.0,
 			WHT:         0.0,
 		}
-		taxResponse := CalculateTax(tax)
+
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 258000.2, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
@@ -48,7 +54,9 @@ func TestCalculateTax(t *testing.T) {
 				},
 			},
 		}
-		taxResponse := CalculateTax(tax)
+
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 4000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
@@ -67,7 +75,8 @@ func TestCalculateTax(t *testing.T) {
 			},
 		}
 
-		taxResponse := CalculateTax(tax)
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 19000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
@@ -86,10 +95,81 @@ func TestCalculateTax(t *testing.T) {
 			},
 		}
 
-		taxResponse := CalculateTax(tax)
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
 
 		assert.EqualValues(t, 0.0, taxResponse.Tax)
 		assert.EqualValues(t, 1000.0, taxResponse.TaxRefund)
+	})
+
+	t.Run("Story: EXP07-0: As user, I want to calculate my tax with tax level detail", func(t *testing.T) {
+		tax := TaxRequest{
+			TotalIncome: 500000.0,
+			WHT:         0.0,
+			Allowances: []Allowance{
+				{
+					AllowanceType: "k-receipt",
+					Amount:        50000.0,
+				},
+				{
+					AllowanceType: "donation",
+					Amount:        100000.0,
+				},
+			},
+		}
+
+		service := NewService(MockDeductuinService())
+		taxResponse := service.CalculateTax(tax)
+
+		assert.EqualValues(t, 14000.0, taxResponse.Tax)
+		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
+
+		assert.Equal(t, 5, len(taxResponse.TaxLevels))
+		assert.EqualValues(t, "0-150,000", taxResponse.TaxLevels[0].Level)
+		assert.EqualValues(t, 0.0, taxResponse.TaxLevels[0].Tax)
+
+		assert.EqualValues(t, "150,001-500,000", taxResponse.TaxLevels[1].Level)
+		assert.EqualValues(t, 14000.0, taxResponse.TaxLevels[1].Tax)
+
+		assert.EqualValues(t, "500,001-1,000,000", taxResponse.TaxLevels[2].Level)
+		assert.EqualValues(t, 0.0, taxResponse.TaxLevels[2].Tax)
+
+		assert.EqualValues(t, "1,000,001-2,000,000", taxResponse.TaxLevels[3].Level)
+		assert.EqualValues(t, 0.0, taxResponse.TaxLevels[3].Tax)
+
+		assert.EqualValues(t, "2,000,001 ขึ้นไป", taxResponse.TaxLevels[4].Level)
+		assert.EqualValues(t, 0.0, taxResponse.TaxLevels[4].Tax)
+
+		/*
+			```json
+			{
+			"tax": 14000.0,
+			"taxLevel": [
+				{
+				"level": "0-150,000",
+				"tax": 0.0
+				},
+				{
+				"level": "150,001-500,000",
+				"tax": 14000.0
+				},
+				{
+				"level": "500,001-1,000,000",
+				"tax": 0.0
+				},
+				{
+				"level": "1,000,001-2,000,000",
+				"tax": 0.0
+				},
+				{
+				"level": "2,000,001 ขึ้นไป",
+				"tax": 0.0
+				}
+			]
+			}
+			```
+
+		*/
 	})
 
 }
@@ -238,4 +318,29 @@ func TestImportTaxCSV(t *testing.T) {
 		assert.Equal(t, "invalid header donation\nerror parse totalIncome at row 1\nerror parse totalIncome at row 2\nerror parse wht at row 3", err.Error())
 
 	})
+}
+
+func MockDeductuinService() deductions.IDeductionService {
+	return &StubDeductionService{PersonalDeduction: 60000.0}
+}
+
+// Mock Repository
+type StubDeductionService struct {
+	PersonalDeduction float64
+}
+
+func (s *StubDeductionService) GetPersonalDeduction() (deductions.PersonalDeductionResponse, error) {
+	return deductions.PersonalDeductionResponse{PersonalDeduction: s.PersonalDeduction}, nil
+}
+
+func (s *StubDeductionService) SetPersonalDeduction(request deductions.DebuctionRequest) (deductions.PersonalDeductionResponse, error) {
+	return deductions.PersonalDeductionResponse{PersonalDeduction: request.Amount}, nil
+}
+
+func (s *StubDeductionService) SetKPlustDeduction(request deductions.DebuctionRequest) (deductions.KReceiptResponse, error) {
+	return deductions.KReceiptResponse{KReceipt: request.Amount}, nil
+}
+
+func (s *StubDeductionService) DeductionConfigs() ([]repo.DeductionConfig, error) {
+	return []repo.DeductionConfig{}, nil
 }
