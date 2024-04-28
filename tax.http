@@ -252,6 +252,13 @@ Content-Type: application/json
   },
   {
     "id": 2,
+    "deductionType": "donation",
+    "deductionAmount": 0,
+    "deductionMin": 0,
+    "adeductionMax": 100000
+  },
+  {
+    "id": 3,
     "deductionType": "k-receipt",
     "deductionAmount": 50000,
     "deductionMin": 0,

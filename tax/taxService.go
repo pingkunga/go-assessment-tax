@@ -11,6 +11,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	deductions "github.com/pingkunga/assessment-tax/deductions"
+	repo "github.com/pingkunga/assessment-tax/postgres"
 )
 
 type TaxService struct {
@@ -21,9 +22,12 @@ func NewService(debuctionSVC deductions.IDeductionService) *TaxService {
 	return &TaxService{deductsvc: debuctionSVC}
 }
 
-func (s *TaxService) CalculateTax(tax TaxRequest) TaxResponse {
+func (s *TaxService) CalculateTax(tax TaxRequest) (TaxResponse, error) {
 
-	netIncome := s.calculateNetIncome(tax)
+	netIncome, err := s.calculateNetIncome(tax)
+	if err != nil {
+		return TaxResponse{}, err
+	}
 
 	var taxAmount float64
 	var taxLevels []TaxLevel
@@ -46,9 +50,9 @@ func (s *TaxService) CalculateTax(tax TaxRequest) TaxResponse {
 	taxAmount = taxAmount - tax.WHT
 
 	if taxAmount < 0 {
-		return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1, TaxLevels: taxLevels}
+		return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1, TaxLevels: taxLevels}, nil
 	}
-	return TaxResponse{Tax: taxAmount, TaxRefund: 0, TaxLevels: taxLevels}
+	return TaxResponse{Tax: taxAmount, TaxRefund: 0, TaxLevels: taxLevels}, nil
 }
 
 // Note
@@ -57,24 +61,27 @@ func round2digits(value float64) float64 {
 	return float64(int(value*100)) / 100
 }
 
-func (s *TaxService) calculateNetIncome(tax TaxRequest) float64 {
+func (s *TaxService) calculateNetIncome(tax TaxRequest) (float64, error) {
 	netIncome := tax.TotalIncome - s.PersonalDeduction()
 
-	for _, allowance := range tax.Allowances {
-		netIncome = netIncome - allowanceAmountGuard(allowance)
+	deductionls, err := s.deductsvc.DeductionConfigs()
+	if err != nil {
+		return 0, errors.New("error get deduction config")
 	}
 
-	return netIncome
+	for _, allowance := range tax.Allowances {
+		netIncome = netIncome - allowanceAmountGuard(allowance, deductionls)
+	}
+
+	return netIncome, nil
 }
 
-func allowanceAmountGuard(allowance Allowance) float64 {
+func allowanceAmountGuard(allowance Allowance, deductionls []repo.DeductionConfig) float64 {
 
-	if allowance.AllowanceType == DEDUCTION_DONATION && allowance.Amount > DEDUCTION_DONATION_MAX {
-		return DEDUCTION_DONATION_MAX
-	}
-
-	if allowance.AllowanceType == DEDUCTION_K_RECEIPT && allowance.Amount > DEDUCTION_K_RECEIPT_MAX {
-		return DEDUCTION_K_RECEIPT_MAX
+	for _, deduction := range deductionls {
+		if allowance.AllowanceType == deduction.DeductionType && allowance.Amount > deduction.DeductionMax {
+			return deduction.DeductionMax
+		}
 	}
 
 	return allowance.Amount
@@ -162,7 +169,10 @@ func TaxStepList() []TaxStep {
 func (s *TaxService) CalculateTaxBatch(taxs []TaxRequest) (TaxBatchsResponse, error) {
 	var taxBatchs []TaxBatchResponse
 	for _, tax := range taxs {
-		taxResponse := s.CalculateTax(tax)
+		taxResponse, err := s.CalculateTax(tax)
+		if err != nil {
+			return TaxBatchsResponse{}, err
+		}
 		taxBatchs = append(taxBatchs, TaxBatchResponse{TotalIncome: tax.TotalIncome, Tax: taxResponse.Tax, TaxRefund: taxResponse.TaxRefund})
 	}
 	return TaxBatchsResponse{Taxes: taxBatchs}, nil

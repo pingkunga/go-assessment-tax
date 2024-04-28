@@ -23,8 +23,9 @@ func TestCalculateTax(t *testing.T) {
 		}
 
 		service := NewService(MockDeductuinService())
-		taxResponse := service.CalculateTax(tax)
+		taxResponse, err := service.CalculateTax(tax)
 
+		assert.Nil(t, err)
 		assert.EqualValues(t, 29000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
 
@@ -37,8 +38,9 @@ func TestCalculateTax(t *testing.T) {
 		}
 
 		service := NewService(MockDeductuinService())
-		taxResponse := service.CalculateTax(tax)
+		taxResponse, err := service.CalculateTax(tax)
 
+		assert.Nil(t, err)
 		assert.EqualValues(t, 258000.2, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
 	})
@@ -56,8 +58,9 @@ func TestCalculateTax(t *testing.T) {
 		}
 
 		service := NewService(MockDeductuinService())
-		taxResponse := service.CalculateTax(tax)
+		taxResponse, err := service.CalculateTax(tax)
 
+		assert.Nil(t, err)
 		assert.EqualValues(t, 4000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
 
@@ -76,8 +79,9 @@ func TestCalculateTax(t *testing.T) {
 		}
 
 		service := NewService(MockDeductuinService())
-		taxResponse := service.CalculateTax(tax)
+		taxResponse, err := service.CalculateTax(tax)
 
+		assert.Nil(t, err)
 		assert.EqualValues(t, 19000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
 
@@ -96,8 +100,9 @@ func TestCalculateTax(t *testing.T) {
 		}
 
 		service := NewService(MockDeductuinService())
-		taxResponse := service.CalculateTax(tax)
+		taxResponse, err := service.CalculateTax(tax)
 
+		assert.Nil(t, err)
 		assert.EqualValues(t, 0.0, taxResponse.Tax)
 		assert.EqualValues(t, 1000.0, taxResponse.TaxRefund)
 	})
@@ -119,8 +124,9 @@ func TestCalculateTax(t *testing.T) {
 		}
 
 		service := NewService(MockDeductuinService())
-		taxResponse := service.CalculateTax(tax)
+		taxResponse, err := service.CalculateTax(tax)
 
+		assert.Nil(t, err)
 		assert.EqualValues(t, 14000.0, taxResponse.Tax)
 		assert.EqualValues(t, 0.0, taxResponse.TaxRefund)
 
@@ -342,5 +348,26 @@ func (s *StubDeductionService) SetKReceiptDeduction(request deductions.Debuction
 }
 
 func (s *StubDeductionService) DeductionConfigs() ([]repo.DeductionConfig, error) {
-	return []repo.DeductionConfig{}, nil
+	return []repo.DeductionConfig{
+		{
+			DeductionType:   "personal",
+			DeductionAmount: 60000.0,
+			DeductionMin:    10000.0,
+			DeductionMax:    100000.0,
+		},
+		{
+			//USER INPUT
+			DeductionType:   "donation",
+			DeductionAmount: 0.0,
+			DeductionMin:    0.0,
+			DeductionMax:    100000.0,
+		},
+		{
+			//USER INPUT
+			DeductionType:   "k-receipt",
+			DeductionAmount: 50000.0,
+			DeductionMin:    0.0,
+			DeductionMax:    100000.0,
+		},
+	}, nil
 }
