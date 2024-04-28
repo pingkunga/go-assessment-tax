@@ -72,6 +72,11 @@ func allowanceAmountGuard(allowance Allowance) float64 {
 	if allowance.AllowanceType == DEDUCTION_DONATION && allowance.Amount > DEDUCTION_DONATION_MAX {
 		return DEDUCTION_DONATION_MAX
 	}
+
+	if allowance.AllowanceType == DEDUCTION_K_RECEIPT && allowance.Amount > DEDUCTION_K_RECEIPT_MAX {
+		return DEDUCTION_K_RECEIPT_MAX
+	}
+
 	return allowance.Amount
 }
 
@@ -79,6 +84,7 @@ const DEDUCTION_DONATION = "donation"
 const DEDUCTION_DONATION_MAX = 100000
 
 const DEDUCTION_K_RECEIPT = "k-receipt"
+const DEDUCTION_K_RECEIPT_MAX = 100000
 
 var ErrTotalIncomeLessThanZero = errors.New("TotalIncome is less than 0")
 var ErrWHTLessThanZero = errors.New("WHT is less than 0")
