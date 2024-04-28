@@ -65,6 +65,12 @@ $env:DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbna
 
 docker run -p 8080:8080 -e DATABASE_URL="host=192.168.1.101 port=5432 user=postgres password=postgres dbname=ktaxes sslmode=disable" -e ADMIN_USERNAME="adminTax" -e ADMIN_PASSWORD="admin!" gotax:1.0.3
 
+
+--IT TEST
+
+docker compose -f docker-compose-integration-test.yaml up --build --abort-on-container-exit --exit-code-from taxapi_tests
+docker-compose -f docker-compose-integration-test.yaml down
+
 ```
 
 - [x] ใช้ `HTTP Method` และ `HTTP Status Code` อย่างเหมาะสม

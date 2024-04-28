@@ -226,7 +226,7 @@ Content-Type: application/json
 {
   "amount": 70000.0
 }
-
+//60000
 Response body
 
 ```json
@@ -397,6 +397,25 @@ Response body
   ]
 }
 ```
+
+### Story: EXP07-1
+POST {{HostAddress}}/tax/calculations
+Content-Type: application/json
+
+{
+  "totalIncome": 500000.0,
+  "wht": 20000.0,
+  "allowances": [
+    {
+      "allowanceType": "k-receipt",
+      "amount": 200000.0
+    },
+    {
+      "allowanceType": "donation",
+      "amount": 100000.0
+    }
+  ]
+}
 
 ### Story: EXP08-0
 ###  As admin, I want to setting k-receipt deduction ในฐานะ Admin ฉันต้องการตั้งค่า k-receipt สำหรับลดหย่อน
