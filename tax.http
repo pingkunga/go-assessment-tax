@@ -226,7 +226,7 @@ Content-Type: application/json
 {
   "amount": 70000.0
 }
-
+//60000
 Response body
 
 ```json
