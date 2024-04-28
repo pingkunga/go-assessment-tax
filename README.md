@@ -31,7 +31,7 @@ K-Tax เป็น Application คำนวนภาษี ที่ให้ผ
 - [x] ในกรณีที่รายรับ รวมหักค่าลดหย่อน พร้อมทั้ง wht พบว่าต้องได้เงินคืน จะต้องคำนวนเงินที่ต้องได้รับคืนใน field ใหม่ ที่ชื่อว่า taxRefund
 
 ## Non-Functional Requirement
-- [x] มี `Unit Test` ครอบคลุม 89.1%
+- [x] มี `Unit Test` ครอบคลุม 80++
 
 ```
 go test -v ./... -cover -coverprofile="c.out"

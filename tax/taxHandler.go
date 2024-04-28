@@ -31,7 +31,10 @@ func (h *TaxHandler) CalculationsHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, common.Err{Message: "Validate Err:" + err.Error()})
 	}
 
-	TaxResponse := h.service.CalculateTax(taxRequest)
+	TaxResponse, errTax := h.service.CalculateTax(taxRequest)
+	if errTax != nil {
+		return c.JSON(http.StatusBadRequest, common.Err{Message: "Calculate Err:" + errTax.Error()})
+	}
 	return c.JSON(http.StatusOK, TaxResponse)
 }
 

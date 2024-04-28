@@ -59,9 +59,9 @@
 				
 				<option value="file1">github.com/pingkunga/assessment-tax/deductions/deductionsService.go (71.0%)</option>
 				
-				<option value="file2">github.com/pingkunga/assessment-tax/tax/taxHandler.go (77.8%)</option>
+				<option value="file2">github.com/pingkunga/assessment-tax/tax/taxHandler.go (76.3%)</option>
 				
-				<option value="file3">github.com/pingkunga/assessment-tax/tax/taxService.go (92.8%)</option>
+				<option value="file3">github.com/pingkunga/assessment-tax/tax/taxService.go (90.8%)</option>
 				
 				</select>
 			</div>
@@ -267,8 +267,11 @@ func (h *TaxHandler) CalculationsHandler(c echo.Context) error <span class="cov8
                 return c.JSON(http.StatusBadRequest, common.Err{Message: "Validate Err:" + err.Error()})
         }</span>
 
-        <span class="cov8" title="1">TaxResponse := h.service.CalculateTax(taxRequest)
-        return c.JSON(http.StatusOK, TaxResponse)</span>
+        <span class="cov8" title="1">TaxResponse, errTax := h.service.CalculateTax(taxRequest)
+        if errTax != nil </span><span class="cov0" title="0">{
+                return c.JSON(http.StatusBadRequest, common.Err{Message: "Calculate Err:" + errTax.Error()})
+        }</span>
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, TaxResponse)</span>
 }
 
 func (h *TaxHandler) BatchCalculationsHandler(c echo.Context) error <span class="cov8" title="1">{
@@ -346,6 +349,7 @@ import (
 
         "github.com/dustin/go-humanize"
         deductions "github.com/pingkunga/assessment-tax/deductions"
+        repo "github.com/pingkunga/assessment-tax/postgres"
 )
 
 type TaxService struct {
@@ -356,21 +360,24 @@ func NewService(debuctionSVC deductions.IDeductionService) *TaxService <span cla
         return &amp;TaxService{deductsvc: debuctionSVC}
 }</span>
 
-func (s *TaxService) CalculateTax(tax TaxRequest) TaxResponse <span class="cov8" title="1">{
+func (s *TaxService) CalculateTax(tax TaxRequest) (TaxResponse, error) <span class="cov8" title="1">{
 
-        netIncome := s.calculateNetIncome(tax)
+        netIncome, err := s.calculateNetIncome(tax)
+        if err != nil </span><span class="cov0" title="0">{
+                return TaxResponse{}, err
+        }</span>
 
-        var taxAmount float64
+        <span class="cov8" title="1">var taxAmount float64
         var taxLevels []TaxLevel
         for _, step := range TaxStepList() </span><span class="cov8" title="1">{
                 stepTaxAmount := 0.0
                 if netIncome &lt;= 0 </span><span class="cov8" title="1">{
                         stepTaxAmount = 0
                 }</span> else<span class="cov8" title="1"> if netIncome &gt; step.MaxIncome </span><span class="cov8" title="1">{
-                        stepTaxAmount = (step.MaxIncome * step.TaxRate)
+                        stepTaxAmount = round2digits(step.MaxIncome * step.TaxRate)
                         netIncome = netIncome - step.MaxIncome
                 }</span> else<span class="cov8" title="1"> {
-                        stepTaxAmount = (netIncome * step.TaxRate)
+                        stepTaxAmount = round2digits(netIncome * step.TaxRate)
                         netIncome = netIncome - step.MaxIncome
                 }</span>
 
@@ -381,26 +388,47 @@ func (s *TaxService) CalculateTax(tax TaxRequest) TaxResponse <span class="cov8"
         <span class="cov8" title="1">taxAmount = taxAmount - tax.WHT
 
         if taxAmount &lt; 0 </span><span class="cov8" title="1">{
-                return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1, TaxLevels: taxLevels}
+                return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1, TaxLevels: taxLevels}, nil
         }</span>
-        <span class="cov8" title="1">return TaxResponse{Tax: taxAmount, TaxRefund: 0, TaxLevels: taxLevels}</span>
+        <span class="cov8" title="1">return TaxResponse{Tax: taxAmount, TaxRefund: 0, TaxLevels: taxLevels}, nil</span>
 }
 
-func (s *TaxService) calculateNetIncome(tax TaxRequest) float64 <span class="cov8" title="1">{
+// Note
+// Go Round https://yourbasic.org/golang/round-float-2-decimal-places/
+func round2digits(value float64) float64 <span class="cov8" title="1">{
+        return float64(int(value*100)) / 100
+}</span>
+
+func (s *TaxService) calculateNetIncome(tax TaxRequest) (float64, error) <span class="cov8" title="1">{
         netIncome := tax.TotalIncome - s.PersonalDeduction()
 
-        for _, allowance := range tax.Allowances </span><span class="cov8" title="1">{
-                netIncome = netIncome - allowanceAmountGuard(allowance)
+        deductionls, err := s.deductsvc.DeductionConfigs()
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, errors.New("error get deduction config")
         }</span>
 
-        <span class="cov8" title="1">return netIncome</span>
+        <span class="cov8" title="1">for _, allowance := range tax.Allowances </span><span class="cov8" title="1">{
+                netIncome = netIncome - allowanceAmountGuard(allowance, deductionls)
+        }</span>
+
+        <span class="cov8" title="1">return netIncome, nil</span>
 }
 
-func allowanceAmountGuard(allowance Allowance) float64 <span class="cov8" title="1">{
+func allowanceAmountGuard(allowance Allowance, deductionls []repo.DeductionConfig) float64 <span class="cov8" title="1">{
 
-        if allowance.AllowanceType == DEDUCTION_DONATION &amp;&amp; allowance.Amount &gt; DEDUCTION_DONATION_MAX </span><span class="cov8" title="1">{
-                return DEDUCTION_DONATION_MAX
-        }</span>
+        for _, deduction := range deductionls </span><span class="cov8" title="1">{
+                if allowance.AllowanceType == deduction.DeductionType &amp;&amp; allowance.Amount &gt; deduction.DeductionMax </span><span class="cov8" title="1">{
+                        return deduction.DeductionMax
+                }</span>
+        }
+        // if allowance.AllowanceType == DEDUCTION_DONATION &amp;&amp; allowance.Amount &gt; DEDUCTION_DONATION_MAX {
+        //         return DEDUCTION_DONATION_MAX
+        // }
+
+        // if allowance.AllowanceType == DEDUCTION_K_RECEIPT &amp;&amp; allowance.Amount &gt; DEDUCTION_K_RECEIPT_MAX {
+        //         return DEDUCTION_K_RECEIPT_MAX
+        // }
+
         <span class="cov8" title="1">return allowance.Amount</span>
 }
 
@@ -408,6 +436,7 @@ const DEDUCTION_DONATION = "donation"
 const DEDUCTION_DONATION_MAX = 100000
 
 const DEDUCTION_K_RECEIPT = "k-receipt"
+const DEDUCTION_K_RECEIPT_MAX = 100000
 
 var ErrTotalIncomeLessThanZero = errors.New("TotalIncome is less than 0")
 var ErrWHTLessThanZero = errors.New("WHT is less than 0")
@@ -485,9 +514,12 @@ func TaxStepList() []TaxStep <span class="cov8" title="1">{
 func (s *TaxService) CalculateTaxBatch(taxs []TaxRequest) (TaxBatchsResponse, error) <span class="cov8" title="1">{
         var taxBatchs []TaxBatchResponse
         for _, tax := range taxs </span><span class="cov8" title="1">{
-                taxResponse := s.CalculateTax(tax)
-                taxBatchs = append(taxBatchs, TaxBatchResponse{TotalIncome: tax.TotalIncome, Tax: taxResponse.Tax, TaxRefund: taxResponse.TaxRefund})
-        }</span>
+                taxResponse, err := s.CalculateTax(tax)
+                if err != nil </span><span class="cov0" title="0">{
+                        return TaxBatchsResponse{}, err
+                }</span>
+                <span class="cov8" title="1">taxBatchs = append(taxBatchs, TaxBatchResponse{TotalIncome: tax.TotalIncome, Tax: taxResponse.Tax, TaxRefund: taxResponse.TaxRefund})</span>
+        }
         <span class="cov8" title="1">return TaxBatchsResponse{Taxes: taxBatchs}, nil</span>
 }
 
