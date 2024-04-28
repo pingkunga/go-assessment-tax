@@ -32,10 +32,10 @@ func (s *TaxService) CalculateTax(tax TaxRequest) TaxResponse {
 		if netIncome <= 0 {
 			stepTaxAmount = 0
 		} else if netIncome > step.MaxIncome {
-			stepTaxAmount = (step.MaxIncome * step.TaxRate)
+			stepTaxAmount = round2digits(step.MaxIncome * step.TaxRate)
 			netIncome = netIncome - step.MaxIncome
 		} else {
-			stepTaxAmount = (netIncome * step.TaxRate)
+			stepTaxAmount = round2digits(netIncome * step.TaxRate)
 			netIncome = netIncome - step.MaxIncome
 		}
 
@@ -49,6 +49,12 @@ func (s *TaxService) CalculateTax(tax TaxRequest) TaxResponse {
 		return TaxResponse{Tax: 0, TaxRefund: taxAmount * -1, TaxLevels: taxLevels}
 	}
 	return TaxResponse{Tax: taxAmount, TaxRefund: 0, TaxLevels: taxLevels}
+}
+
+// Note
+// Go Round https://yourbasic.org/golang/round-float-2-decimal-places/
+func round2digits(value float64) float64 {
+	return float64(int(value*100)) / 100
 }
 
 func (s *TaxService) calculateNetIncome(tax TaxRequest) float64 {
